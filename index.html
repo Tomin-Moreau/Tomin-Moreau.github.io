@@ -27,7 +27,6 @@
   --blocked-bg: #c9bfab;
   --blocked-ink: #7b7569;
   --ui-scale: 1.5;
-  --game-scale: 1.5;
   --tile-font: 'Noto Serif SC', serif;
 }
 
@@ -259,59 +258,46 @@ body {
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 399; }
 .sidebar-overlay.open { display: block; }
 
-/* ─────────── GAME COLUMN & CENTERED SCALING ─────────── */
+/* ─────────── GAME COLUMN & AUTO-FIT LOGIC ─────────── */
 #game-col {
   flex: 1; width: 100vw; height: 100dvh;
-  display: flex; flex-direction: column; align-items: stretch;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   position: relative; background: var(--bg);
+  overflow: hidden; /* ABSOLUTELY NO SCROLLBARS */
 }
 
 /* BIG CORNER INFO */
 #info-corner {
   position: absolute; top: 2rem; right: 3rem; text-align: right; z-index: 100; pointer-events: none; 
 }
-.info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; }
-.info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
+.info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
+.info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
 .info-sub.warn { color: #d00000; animation: pulse 1s infinite alternate; }
 @keyframes pulse { to { opacity: 0.5; } }
-.info-combo { font-size: 1rem; color: var(--ink-light); font-weight: 700; letter-spacing: 1px; margin-top: 0.4rem; margin-bottom: 6px; }
+.info-combo { font-size: 1rem; color: var(--ink-light); font-weight: 700; letter-spacing: 1px; margin-top: 0.4rem; margin-bottom: 6px; text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
 #ic-combo-track { width: 140px; height: 6px; border: 1px solid var(--ink); border-radius: 2px; background: transparent; margin-left: auto; }
 #ic-combo-fill { height: 100%; width: 0%; background: var(--ink); transition: width 0.1s linear; }
 .info-stamp {
   color: #c93b3b; border: 3px solid #c93b3b; border-radius: 4px;
   font-family: 'Noto Serif SC', serif; font-size: 3rem; 
   padding: 4px 12px; display: inline-block; transform: rotate(-15deg);
-  margin-top: 1rem; font-weight: 700; opacity: 0.85;
+  margin-top: 1rem; font-weight: 700; opacity: 0.85; background: var(--bg);
 }
 
-/* Centered Board Container */
-#board-wrapper-spacer {
-  flex: 1; width: 100%; overflow: auto; 
-  display: flex; align-items: center; justify-content: center;
-}
-#board-container {
-  width: calc(1100px * var(--game-scale)); height: calc(700px * var(--game-scale));
-  position: relative; flex-shrink: 0;
+/* Logical strict boundaries for auto-fit sizing */
+#logical-game-area {
+  position: relative;
+  transform-origin: center center;
 }
 #board {
-  position: absolute; top: 0; left: 0; width: 1100px; height: 700px;
-  transform: scale(var(--game-scale)); transform-origin: top left;
-}
-
-/* Centered Buffer Container */
-#buf-wrapper-spacer {
-  position: sticky; bottom: 0; left: 0; right: 0; z-index: 100;
-  background: var(--bg); border-top: 2px solid var(--ink);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding: 10px 0;
-}
-#buf-container {
-  width: calc(880px * var(--game-scale)); height: calc(110px * var(--game-scale));
-  position: relative; flex-shrink: 0;
+  position: absolute; left: 0; top: 0;
+  width: 1100px; height: 700px;
 }
 #buf-area { 
-  position: absolute; top: 0; left: 0; width: 880px; 
-  transform: scale(var(--game-scale)); transform-origin: top left; 
+  position: absolute;
+  background: var(--panel); border: 3px solid var(--ink); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
 /* ─────────── TILES ─────────── */
@@ -321,24 +307,26 @@ body {
   user-select: none; border: 2px solid var(--ink);
   transition: background 0.15s ease, filter 0.15s;
 }
-.tile .ch { font-size: 2.4rem; font-weight: 700; line-height: 1; color: inherit; }
+/* IMPORTANT: Hardcode tile text size in PX so UI Scale doesn't mess it up! */
+.tile .ch { font-size: 42px; font-weight: 700; line-height: 1; color: inherit; }
 .tile.blocked { background: var(--blocked-bg); color: var(--blocked-ink); border-color: var(--blocked-ink); cursor: not-allowed; }
 .tile.free { background: var(--tile-bg); color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); pointer-events: auto; }
 .tile.free:hover { background: var(--tile-hover); }
 .tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
 @keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
 
-#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-#buf-title { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
-#buf-cnt { font-size: 0.75rem; font-weight: 700; }
-#slots { display: flex; gap: 8px; justify-content: center; }
+#buf-hdr { display: flex; justify-content: space-between; align-items: center; }
+/* Hardcode buffer text sizes in PX */
+#buf-title { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
+#buf-cnt { font-size: 18px; font-weight: 700; color: var(--ink); }
+#slots { display: flex; justify-content: center; }
 .slot { width: 60px; height: 80px; border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; }
 .btile {
   position: absolute; inset: -2px; border-radius: 4px;
   background: var(--tile-bg); border: 2px solid var(--ink);
   display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--ink);
 }
-.btile .ch { font-size: 2.4rem; font-weight: 700; color: var(--ink); }
+.btile .ch { font-size: 42px; font-weight: 700; color: var(--ink); }
 .btile.entering { animation: btIn .2s ease-out both; }
 @keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .btile.clear-anim { animation: btClear .38s ease-in forwards; }
@@ -374,38 +362,11 @@ body {
   .menu-subtitle { margin-bottom: 0.5rem; }
   .mobile-menu-btn { top: 10px; left: 10px; padding: 5px 10px; font-size: 0.9rem; }
   
-  /* Game Board Adjustments */
+  /* Game Info Shrink */
   #info-corner { top: 10px; right: 15px; text-align: right; }
   .info-lvl { font-size: 2.2rem; margin-bottom: 0; }
   .info-sub { font-size: 1.2rem; }
   .info-stamp { font-size: 1.5rem; padding: 2px 4px; margin-top: 0.2rem; }
-  
-  /* Move Buffer Underneath the Level Info To Free Screen Vertical Space */
-  #buf-wrapper-spacer {
-    position: absolute;
-    top: 90px; right: 15px;
-    bottom: auto; left: auto;
-    padding: 0; border: none; background: transparent; box-shadow: none; z-index: 100;
-  }
-  #buf-container {
-    width: calc(80px * var(--game-scale));
-    height: calc(650px * var(--game-scale));
-  }
-  #buf-area {
-    width: 80px; left: auto; right: 0;
-    transform-origin: top right;
-  }
-  #buf-hdr {
-    flex-direction: column; align-items: flex-end; text-align: right; gap: 4px; margin-bottom: 8px;
-  }
-  #slots {
-    flex-direction: column; align-items: flex-end; gap: 6px;
-  }
-  
-  /* Give the Board the Remainder of the Screen and Prevent Overlapping the Buffer */
-  #board-wrapper-spacer {
-    padding-right: calc(100px * var(--game-scale));
-  }
 }
 </style>
 </head>
@@ -484,7 +445,6 @@ body {
   </div>
 
   <div id="view-options" class="view hide">
-    <!-- Notice overflow: hidden forces scrolling INSIDE .tab-content, keeping the Back button locked on screen! -->
     <div class="menu-box" style="width: 550px; max-width: 95vw; max-height: 95dvh; display: flex; flex-direction: column; overflow: hidden;">
       <div class="menu-title" style="flex-shrink: 0;">Options</div>
       <div class="options-tabs">
@@ -503,13 +463,10 @@ body {
           To enable audio, download an MP3 file, rename it to <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>, and place it in the same folder as this game.
         </div>
         <div class="ctrl">
-          <label>UI Scale <span id="val-ui">1.5x</span></label>
+          <label>UI Scale (Menus) <span id="val-ui">1.5x</span></label>
           <input type="range" class="std-range" id="sl-ui" min="0.5" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
         </div>
-        <div class="ctrl">
-          <label>Game Scale <span id="val-game">1.5x</span></label>
-          <input type="range" class="std-range" id="sl-game" min="0.3" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
-        </div>
+        <!-- Removed Game Scale manually. It is now Automatic. -->
         <div style="margin-top: auto; padding-top: 1.5rem; flex-shrink: 0;">
           <button class="btn btn-danger" onclick="resetProgression()">Reset Progression</button>
         </div>
@@ -625,16 +582,11 @@ body {
         <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
       </div>
       
-      <div id="board-wrapper-spacer">
-        <div id="board-container"><div id="board"></div></div>
-      </div>
-      
-      <div id="buf-wrapper-spacer">
-        <div id="buf-container">
-          <div id="buf-area">
-            <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
-            <div id="slots"></div>
-          </div>
+      <div id="logical-game-area">
+        <div id="board"></div>
+        <div id="buf-area">
+          <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
+          <div id="slots"></div>
         </div>
       </div>
     </div>
@@ -656,6 +608,60 @@ body {
 'use strict';
 
 function $(id) { return document.getElementById(id); }
+
+// ==================== AUTO-FIT RESIZE LOGIC ====================
+// This ensures the board and buffer are always visible without scrolling!
+function resizeGame() {
+  if (viewActive !== 'game') return;
+  const col = $('game-col');
+  const area = $('logical-game-area');
+  const buf = $('buf-area');
+  const slots = $('slots');
+  const bufHdr = $('buf-hdr');
+
+  if (!col || !area) return;
+
+  const cw = col.clientWidth;
+  const ch = col.clientHeight;
+  if (cw === 0 || ch === 0) return;
+
+  // Decide if we have enough horizontal room to put the buffer on the right
+  const isWide = (cw / ch) > 1.35;
+  let logicW, logicH;
+
+  if (isWide) {
+    // Vertical Buffer configuration on the far right
+    logicW = 1250; logicH = 700;
+    buf.style.left = '1120px'; buf.style.top = '10px';
+    buf.style.width = '120px'; buf.style.height = '680px';
+    buf.style.flexDirection = 'column';
+    slots.style.flexDirection = 'column';
+    slots.style.gap = '6px';
+    bufHdr.style.flexDirection = 'column';
+    bufHdr.style.margin = '0 0 15px 0';
+  } else {
+    // Horizontal Buffer configuration at the bottom
+    logicW = 1100; logicH = 850;
+    buf.style.left = '110px'; buf.style.top = '720px';
+    buf.style.width = '880px'; buf.style.height = '120px';
+    buf.style.flexDirection = 'row';
+    slots.style.flexDirection = 'row';
+    slots.style.gap = '8px';
+    bufHdr.style.flexDirection = 'column';
+    bufHdr.style.margin = '0 20px 0 0';
+  }
+
+  area.style.width = logicW + 'px';
+  area.style.height = logicH + 'px';
+
+  // Find the max scale that perfectly fits this logical layout into the screen, minus a tiny 4% padding
+  const scale = Math.min(cw / logicW, ch / logicH) * 0.96;
+  area.style.transform = `scale(${scale})`;
+}
+
+// Watch window resizes
+window.addEventListener('resize', resizeGame);
+
 
 // ==================== FULLSCREEN & SIDEBAR ====================
 function enterFullscreen() {
@@ -816,7 +822,6 @@ function ensureMusic() {
 function applySmartDefaults() {
   if (window.innerWidth <= 950 || window.innerHeight <= 600) {
     $('sl-ui').value = 1.0;
-    $('sl-game').value = 0.6; 
     $('sl-spread').value = 200;
   }
 }
@@ -831,6 +836,9 @@ function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`
   if($('sidebar-overlay')) $('sidebar-overlay').classList.remove('open');
   
   if (viewName === 'levels') renderLevelGrid();
+  
+  // Call resize strictly when entering the game screen to ensure exact fit immediately
+  if (viewName === 'game') setTimeout(resizeGame, 0); 
 
   if (viewName !== 'game') {
     if (comboTid) clearTimeout(comboTid);
@@ -846,13 +854,11 @@ function switchOptionsTab(tabName) {
 
 function updateOptionsUI() {
   const uiVal = parseFloat($('sl-ui').value);
-  const gameVal = parseFloat($('sl-game').value);
   $('val-ui').innerText = uiVal.toFixed(1) + 'x';
-  $('val-game').innerText = gameVal.toFixed(1) + 'x';
   document.documentElement.style.setProperty('--ui-scale', uiVal);
-  document.documentElement.style.setProperty('--game-scale', gameVal);
   if (bgm) bgm.volume = parseFloat($('sl-vol').value);
   $('val-vol').innerText = Math.round(parseFloat($('sl-vol').value) * 100) + '%';
+  resizeGame(); // Recompute layout just in case
 }
 
 function updateProbUI() {
@@ -982,7 +988,6 @@ function initMenu() {
   $('game-back-main-btn').onclick = () => { ensureMusic(); navTo('main'); };
 
   $('sl-ui').oninput = updateOptionsUI;
-  $('sl-game').oninput = updateOptionsUI;
   $('sl-vol').oninput = updateOptionsUI;
   $('sl-p1').oninput = updateProbUI;
   $('sl-p2').oninput = updateProbUI;
@@ -1161,7 +1166,7 @@ function startLevel(lvlIdx) {
       fontAssignments = Array(copies).fill(levelFonts[0]);
     } else if (currentDifficulty === 2) {
       const half = Math.floor(copies / 2);
-      fontAssignments =[...Array(half).fill(levelFonts[0]), ...Array(copies - half).fill(levelFonts[1])];
+      fontAssignments = [...Array(half).fill(levelFonts[0]), ...Array(copies - half).fill(levelFonts[1])];
     } else if (currentDifficulty === 3) {
       const third = Math.floor(copies / 3);
       fontAssignments =[...Array(third).fill(levelFonts[0]), ...Array(third).fill(levelFonts[1]), ...Array(copies - third * 2).fill(levelFonts[2])];
@@ -1203,6 +1208,9 @@ function startLevel(lvlIdx) {
     board.appendChild(el); tiles.push(tileObj);
   });
   recalcFree(); renderSlots(null);
+  
+  // Guarantee perfect layout sizing after tiles load
+  resizeGame();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
