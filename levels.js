@@ -1,7 +1,7 @@
 // levels.js
 // 50 Levels of Visual Resolution Training
 // Logic: Increasing stroke count + high-similarity "rival" clusters
-const HANZI_LIBRARY = [
+var HANZI_LIBRARY = [
   // --- STAGE 1: FUNDAMENTAL SLANTS (1-4 STROKES) ---
   { level: 1, name: "The 'People' Slant", pool: ['人', '入', '八', '乂', '义', '父', '仗', '仅', '仓', '仑'] },
   { level: 2, name: "The 'Cross' Pillar", pool: ['十', '千', '干', '于', '平', '午', '牛', '丰', '半', '手'] },
