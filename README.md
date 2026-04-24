@@ -9,3 +9,7 @@ The source code of this project is licensed under the [GPL License](LICENSE).
 The fonts and audio files included in this repository are subject to their own respective licenses:
 * Fonts are licensed under the SIL Open Font License (OFL).
 * The music track `music.mp3` is[Public Domain] named Spring River Flower Moon Night. It is NOT covered by the GPL license.
+
+** Audio **
+
+I recommand the ytb video https://www.youtube.com/watch?v=umso9V0uGFQ&t=284s. download it, replace and rename it to  music.mp3 and you are good to go 
