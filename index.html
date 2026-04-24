@@ -2,6 +2,1184 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Crucial Mobile Meta Tags for "App-like" Fullscreen (Add to Home Screen) -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="display" content="standalone">
+<title>Scholar Match — Harmony & Layout</title>
+
+<!-- Attempt to load external levels file -->
+<script src="levels.js"></script>
+
+<style>
+/* Imported Multiple Chinese Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Noto+Sans+SC:wght@400;700&family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Long+Cang&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #dcd0b9;
+  --panel: #d0c3ab;
+  --ink: #111111;
+  --ink-light: #444444;
+  --tile-bg: #ffffff;
+  --tile-hover: #eee6d8;
+  --blocked-bg: #c9bfab;
+  --blocked-ink: #7b7569;
+  --ui-scale: 1.5;
+  --game-scale: 1.5;
+  --tile-font: 'Noto Serif SC', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: calc(16px * var(--ui-scale)); }
+
+body {
+  width: 100vw; 
+  height: 100dvh; /* dvh fixes mobile browser URL bar clipping */
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden; 
+  margin: 0; padding: 0;
+  display: flex;
+}
+
+#app-root {
+  width: 100vw; height: 100dvh;
+  display: flex;
+}
+
+.view {
+  width: 100%; height: 100dvh;
+  position: absolute;
+  top: 0; left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 10;
+}
+
+#view-game {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  position: relative;
+  min-width: max-content;
+}
+
+.hide { display: none !important; }
+
+/* ─────────── PORTRAIT LOCK ─────────── */
+#portrait-lock {
+  display: none; position: fixed; inset: 0; z-index: 999999;
+  background: var(--bg); color: var(--ink);
+  flex-direction: column; align-items: center; justify-content: center; text-align: center;
+}
+.rotate-icon { font-size: 4rem; margin-bottom: 1rem; animation: rotatePhone 2s infinite ease-in-out alternate; }
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 100% { transform: rotate(-90deg); } }
+
+@media screen and (orientation: portrait) and (max-width: 768px) {
+  #portrait-lock { display: flex; }
+  #app-root { display: none !important; }
+}
+
+/* ─────────── MENUS ─────────── */
+.menu-box {
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  padding: 2.5rem 3.5rem;
+  box-shadow: 8px 8px 0 var(--ink);
+  text-align: center;
+  max-width: 95vw;
+  max-height: 95dvh;
+  overflow-y: auto;
+}
+
+.menu-split {
+  display: flex; gap: 2rem; width: 1000px; text-align: left; padding: 2.5rem;
+}
+
+.menu-title {
+  font-family: 'Noto Serif SC', serif; font-size: 3rem;
+  font-weight: 700; color: var(--ink);
+  margin-bottom: 0.5rem; border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.5rem;
+}
+
+.menu-subtitle {
+  font-size: 1rem; font-weight: 700; color: var(--ink-light);
+  margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px;
+}
+
+.btn {
+  background: var(--ink); color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  border: 2px solid var(--ink); padding: 0.75rem 1rem;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 1px;
+  transition: all 0.15s; width: 100%;
+}
+.btn:hover:not(:disabled) { background: var(--tile-bg); color: var(--ink); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--ink-light); background: transparent; color: var(--ink-light); }
+.btn-secondary { background: var(--bg); color: var(--ink); }
+.btn-secondary:hover { background: var(--ink); color: var(--bg); }
+.btn-danger { background: transparent; color: #c93b3b; border-color: #c93b3b; }
+.btn-danger:hover { background: #c93b3b; color: var(--bg); }
+
+/* Tabs */
+.options-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.tab-btn { flex: 1; padding: 0.6rem; font-size: 0.95rem; font-weight: 700; background: var(--bg); color: var(--ink); border: 2px solid var(--ink); cursor: pointer; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+.tab-btn.active { background: var(--ink); color: var(--bg); }
+.tab-content { display: none; flex-direction: column; text-align: left; }
+.tab-content.active { display: flex; }
+
+/* Library View Specifics */
+.col-title {
+  font-family: 'Noto Serif SC', serif; font-size: 2.2rem;
+  font-weight: 700; color: var(--ink); margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--ink); padding-bottom: 0.5rem; line-height: 1.2; word-wrap: break-word;
+}
+.col-separator { width: 2px; flex-shrink: 0; background: var(--ink); opacity: 0.2; margin: 1.5rem 0; }
+
+.mode-toggle-container { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.btn-mode { flex: 1; padding: 0.5rem; font-size: 0.9rem; background: var(--bg); color: var(--ink-light); border-color: var(--ink-light); }
+.btn-mode.active-mode { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Level Grid */
+.lvl-grid {
+  display: grid; grid-template-rows: repeat(5, 1fr); grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column; gap: 0.5rem; width: 100%;
+}
+.btn-lvl {
+  background: var(--bg); color: var(--ink); font-family: 'JetBrains Mono', monospace;
+  border: 2px solid var(--ink); font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; padding-bottom: 0.8rem; 
+}
+.btn-lvl:hover { background: var(--tile-hover); }
+.selected-lvl { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Seals */
+.lvl-seal-container { position: absolute; bottom: 2px; left: 3px; right: 3px; height: 14px; pointer-events: none; }
+.lvl-seal {
+  position: absolute; bottom: 0; font-family: 'Noto Serif SC', serif; font-size: 0.65rem; line-height: 1;
+  padding: 1px 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.85); font-weight: 700;
+}
+.seal-d1 { left: 0; transform: rotate(-8deg); color: #8c7355; border: 1px solid #8c7355; }
+.seal-d2 { left: 50%; transform: translateX(-50%) rotate(5deg); color: #5f7a8c; border: 1px solid #5f7a8c; }
+.seal-d3 { right: 0; transform: rotate(-12deg); color: #c93b3b; border: 1px solid #c93b3b; }
+
+.pagination-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
+.btn-icon { width: auto; padding: 0.4rem 0.8rem; }
+
+/* Preview Grid */
+.preview-grid-5x2 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 1.5rem; }
+.preview-char {
+  border: 2px solid var(--ink); background: var(--tile-bg); font-family: var(--tile-font); font-size: 1.8rem;
+  padding: 5px 0; text-align: center; border-radius: 4px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+}
+.best-stats-box {
+  margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 700; color: var(--ink); background: var(--tile-bg);
+  padding: 15px; border: 2px solid var(--ink); border-radius: 4px; text-align: left; display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Controls */
+.ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1rem; }
+.ctrl label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
+.ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; }
+.ctrl-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;}
+.ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
+.ctrl select { padding: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
+
+/* Font Options Selectors */
+.font-diff-section { background: var(--tile-bg); border: 2px solid var(--ink); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+.font-selectors { display: grid; grid-template-columns: 1fr 32px; gap: 6px; margin-top: 5px; align-items: center; }
+.f-prev { border: 1px solid var(--ink); text-align: center; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--bg); }
+
+/* Dual Slider for Probabilities */
+.prob-track { display: flex; height: 18px; width: 100%; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; margin-bottom: 2px; }
+.pt-seg { display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #fff; transition: width 0.1s; }
+.pt-6 { background: #444; } .pt-9 { background: #777; } .pt-12 { background: #aaa; color: var(--ink); }
+
+.range-slider { position: relative; height: 20px; width: 100%; }
+.range-slider input[type="range"] {
+  position: absolute; top: 0; left: 0; width: 100%;
+  pointer-events: none; appearance: none; background: transparent;
+  margin: 0; height: 100%; outline: none;
+}
+.range-slider input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto; appearance: none; cursor: pointer;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--ink); box-shadow: 0 0 0 1px var(--bg);
+}
+.range-slider input[type="range"]::-moz-range-thumb {
+  pointer-events: auto; appearance: none; cursor: pointer;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--ink);
+}
+
+/* ─────────── SIDEBAR (GAME SCREEN) ─────────── */
+#sidebar {
+  width: 20rem; height: 100dvh; position: sticky; top: 0; left: 0;
+  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+  flex-shrink: 0; overflow-y: auto; z-index: 200; transition: left 0.3s ease;
+}
+#sidebar::after {
+  content: ''; position: absolute; right: 0; top: 5%; bottom: 5%;
+  width: 2px; background: var(--ink); opacity: 0.4;
+}
+
+#game-sidebar-title { font-size: 1.6rem; margin-bottom: 1rem; margin-top: 2rem;}
+.compact-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 1rem; }
+.compact-char {
+  border: 1px solid var(--ink); background: var(--tile-bg);
+  font-family: var(--tile-font); font-size: 1.2rem;
+  padding: 2px; text-align: center; border-radius: 2px;
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+}
+.compact-stats { padding: 10px; font-size: 0.8rem; margin-bottom: 1rem; }
+
+.mobile-menu-btn { display: none; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+
+/* ─────────── GAME COLUMN & CENTERED SCALING ─────────── */
+#game-col {
+  flex: 1; height: 100dvh;
+  display: flex; flex-direction: column; align-items: stretch;
+  position: relative; background: var(--bg);
+}
+
+/* BIG CORNER INFO */
+#info-corner {
+  position: absolute; top: 2rem; right: 3rem; text-align: right; z-index: 100; pointer-events: none; 
+}
+.info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; }
+.info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
+.info-sub.warn { color: #d00000; animation: pulse 1s infinite alternate; }
+@keyframes pulse { to { opacity: 0.5; } }
+.info-combo { font-size: 1rem; color: var(--ink-light); font-weight: 700; letter-spacing: 1px; margin-top: 0.4rem; margin-bottom: 6px; }
+#ic-combo-track { width: 140px; height: 6px; border: 1px solid var(--ink); border-radius: 2px; background: transparent; margin-left: auto; }
+#ic-combo-fill { height: 100%; width: 0%; background: var(--ink); transition: width 0.1s linear; }
+.info-stamp {
+  color: #c93b3b; border: 3px solid #c93b3b; border-radius: 4px;
+  font-family: 'Noto Serif SC', serif; font-size: 3rem; 
+  padding: 4px 12px; display: inline-block; transform: rotate(-15deg);
+  margin-top: 1rem; font-weight: 700; opacity: 0.85;
+}
+
+/* Centered Board Container */
+#board-wrapper-spacer {
+  flex: 1; width: 100%; overflow: auto; /* Allows panning if scaled larger than screen */
+  display: flex; align-items: center; justify-content: center;
+}
+#board-container {
+  width: calc(1100px * var(--game-scale));
+  height: calc(700px * var(--game-scale));
+  position: relative; flex-shrink: 0;
+}
+#board {
+  position: absolute; top: 0; left: 0;
+  width: 1100px; height: 700px;
+  transform: scale(var(--game-scale)); transform-origin: top left;
+}
+
+/* Centered Buffer Container */
+#buf-wrapper-spacer {
+  position: sticky; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg); border-top: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding: 10px 0;
+}
+#buf-container {
+  width: calc(880px * var(--game-scale));
+  height: calc(110px * var(--game-scale));
+  position: relative; flex-shrink: 0;
+}
+#buf-area { 
+  position: absolute; top: 0; left: 0;
+  width: 880px; transform: scale(var(--game-scale)); transform-origin: top left; 
+}
+
+/* ─────────── TILES ─────────── */
+.tile {
+  position: absolute; width: 60px; height: 80px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; border: 2px solid var(--ink);
+  transition: background 0.15s ease, filter 0.15s;
+}
+.tile .ch { font-size: 2.4rem; font-weight: 700; line-height: 1; color: inherit; }
+.tile.blocked { background: var(--blocked-bg); color: var(--blocked-ink); border-color: var(--blocked-ink); cursor: not-allowed; }
+.tile.free { background: var(--tile-bg); color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); pointer-events: auto; }
+.tile.free:hover { background: var(--tile-hover); }
+.tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
+@keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
+
+#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+#buf-title { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
+#buf-cnt { font-size: 0.75rem; font-weight: 700; }
+#slots { display: flex; gap: 8px; justify-content: center; }
+.slot { width: 60px; height: 80px; border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; }
+.btile {
+  position: absolute; inset: -2px; border-radius: 4px;
+  background: var(--tile-bg); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--ink);
+}
+.btile .ch { font-size: 2.4rem; font-weight: 700; color: var(--ink); }
+.btile.entering { animation: btIn .2s ease-out both; }
+@keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btile.clear-anim { animation: btClear .38s ease-in forwards; }
+@keyframes btClear {
+  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
+  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* ─────────── OVERLAY (Win/Loss) ─────────── */
+#overlay {
+  position: fixed; inset: 0; background: rgba(220, 208, 185, 0.9);
+  display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99998;
+}
+#overlay-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  text-align: center; padding: 2.5rem 4rem; border: 2px solid var(--ink);
+  background: var(--bg); box-shadow: 6px 6px 0 var(--ink);
+  animation: ovIn .3s ease-out both;
+}
+@keyframes ovIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+#ov-title { font-family: 'Noto Serif SC', serif; font-size: 2.6rem; font-weight: 700; color: var(--ink); }
+.ov-rules { font-size: 0.9rem; color: var(--ink-light); max-width: 320px; line-height: 1.5; font-weight: 700; }
+.ov-stats { font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+/* ─────────── MOBILE LANDSCAPE TWEAKS ─────────── */
+@media (max-width: 900px) {
+  .menu-split { flex-direction: column !important; padding: 1.5rem !important; gap: 1rem !important; }
+  #lvl-col-left, #lvl-col-preview { width: 100% !important; padding: 0 !important; border: none !important; }
+  .col-separator { width: 100% !important; height: 2px !important; margin: 1rem 0 !important; }
+  
+  .mobile-menu-btn { 
+    display: block; position: absolute; top: 10px; left: 10px; z-index: 300;
+  }
+  #sidebar {
+    position: fixed; left: -22rem; z-index: 400; box-shadow: 5px 0 15px rgba(0,0,0,0.4);
+  }
+  #sidebar.open { left: 0; }
+  .sidebar-overlay.open { display: block; }
+  
+  #info-corner { top: 10px; right: 15px; }
+  .info-lvl { font-size: 2.5rem; margin-bottom: 0.2rem; }
+  .info-sub { font-size: 1.5rem; }
+  .info-stamp { font-size: 2.5rem; padding: 2px 8px; margin-top: 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="portrait-lock">
+  <div class="rotate-icon">📱</div>
+  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Please Rotate Your Device</h2>
+  <p style="font-family: 'JetBrains Mono', monospace;">Scholar Match is best played in Landscape Mode.</p>
+</div>
+
+<div id="app-root">
+  <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
+  <div id="view-main" class="view">
+    <div class="menu-box" style="width: 500px; max-width: 90vw;">
+      <div class="menu-title">Scholar Match</div>
+      <div class="menu-subtitle">Mind & Harmony</div>
+      <div class="menu-list" style="margin-top: 2rem;">
+        <button class="btn" id="startFromMenuBtn">Select Level</button>
+        <button class="btn" id="optionsFromMenuBtn">Options</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-levels" class="view hide">
+    <div class="menu-box menu-split">
+      <div id="lvl-col-left" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+        <div class="col-title">Library</div>
+        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Select Game Mode</div>
+        <div class="mode-toggle-container">
+          <button class="btn btn-mode active-mode" data-mode="zen" onclick="setMode('zen')">Zen</button>
+          <button class="btn btn-mode" data-mode="time" onclick="setMode('time')">Time</button>
+          <button class="btn btn-mode" data-mode="score" onclick="setMode('score')">Score</button>
+        </div>
+        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Choose Your Text</div>
+        
+        <div class="lvl-grid" id="lvl-list"></div>
+        <div id="lvl-pagination" class="pagination-controls hide">
+          <button class="btn btn-icon" id="btn-prev-page" onclick="changePage(-1)">◀</button>
+          <span id="page-indicator" style="font-weight: 700; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">1 / 1</span>
+          <button class="btn btn-icon" id="btn-next-page" onclick="changePage(1)">▶</button>
+        </div>
+        <div style="margin-top: auto; padding-top: 1.5rem;">
+          <button class="btn btn-secondary" id="backToMainFromLevels">Back to Menu</button>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div id="lvl-col-preview" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+        <div class="col-title" id="preview-title">Level Name</div>
+        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Difficulty (Fonts)</div>
+        <div class="mode-toggle-container" style="margin-bottom: 1.5rem;">
+          <button class="btn btn-mode active-mode btn-diff" data-diff="1" onclick="setDifficulty(1)">D1 (1 Font)</button>
+          <button class="btn btn-mode btn-diff" data-diff="2" onclick="setDifficulty(2)">D2 (2 Fonts)</button>
+          <button class="btn btn-mode btn-diff" data-diff="3" onclick="setDifficulty(3)">D3 (3 Fonts)</button>
+        </div>
+        <div class="best-stats-box">
+          <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="stat-best-time">--</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="stat-best-score">--</span></div>
+        </div>
+        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Character Preview</div>
+        <div id="preview-chars" class="preview-grid-5x2"></div>
+        <button class="btn" id="preview-play-btn" style="margin-top: auto;">Play Level</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-options" class="view hide">
+    <div class="menu-box" style="width: 550px; max-width: 95vw; min-height: 600px; display: flex; flex-direction: column;">
+      <div class="menu-title">Options</div>
+      <div class="options-tabs">
+        <button class="tab-btn active" data-tab="general" onclick="switchOptionsTab('general')">General</button>
+        <button class="tab-btn" data-tab="fonts" onclick="switchOptionsTab('fonts')">Fonts Setup</button>
+        <button class="tab-btn" data-tab="layout" onclick="switchOptionsTab('layout')">Layout</button>
+      </div>
+
+      <!-- GENERAL TAB -->
+      <div id="tab-general" class="tab-content active" style="flex: 1;">
+        <div class="ctrl">
+          <label>Music Volume <span id="val-vol">50%</span></label>
+          <input type="range" class="std-range" id="sl-vol" min="0" max="1" step="0.05" value="0.5" oninput="updateOptionsUI()">
+        </div>
+        <div style="margin-bottom: 1.5rem; padding: 10px; background: var(--tile-bg); border: 1px dashed var(--ink-light); font-size: 0.75rem; text-align: left;">
+          <span style="font-weight: 700; color: var(--ink);">🎵 Local Music:</span><br>
+          To enable audio, download an MP3 file, rename it to <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>, and place it in the same folder as this game.
+        </div>
+        <div class="ctrl">
+          <label>UI Scale <span id="val-ui">1.5x</span></label>
+          <input type="range" class="std-range" id="sl-ui" min="0.5" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
+        </div>
+        <div class="ctrl">
+          <label>Game Scale <span id="val-game">1.5x</span></label>
+          <input type="range" class="std-range" id="sl-game" min="0.3" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
+        </div>
+        <div style="margin-top: auto;">
+          <button class="btn btn-danger" onclick="resetProgression()">Reset Progression</button>
+        </div>
+      </div>
+
+      <!-- FONTS TAB -->
+      <div id="tab-fonts" class="tab-content" style="flex: 1;">
+        <div style="font-size: 0.8rem; color: var(--ink-light); margin-bottom: 1rem; line-height: 1.4;">
+          Assign exact typography styles. Duplicates within the same difficulty are automatically prevented.
+        </div>
+        <div class="font-diff-section">
+          <label style="font-weight: 700; font-size: 0.85rem;">D1 (Bronze) - 1 Font</label>
+          <div class="font-selectors">
+            <select id="d1-f1" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d1-f1">永</div>
+          </div>
+        </div>
+        <div class="font-diff-section">
+          <label style="font-weight: 700; font-size: 0.85rem;">D2 (Silver) - 2 Fonts</label>
+          <div class="font-selectors">
+            <select id="d2-f1" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d2-f1">永</div>
+            <select id="d2-f2" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d2-f2">永</div>
+          </div>
+        </div>
+        <div class="font-diff-section">
+          <label style="font-weight: 700; font-size: 0.85rem;">D3 (Gold) - 3 Fonts</label>
+          <div class="font-selectors">
+            <select id="d3-f1" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d3-f1">永</div>
+            <select id="d3-f2" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d3-f2">永</div>
+            <select id="d3-f3" onchange="validateFonts()"></select>
+            <div class="f-prev" id="p-d3-f3">永</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYOUT TAB -->
+      <div id="tab-layout" class="tab-content" style="flex: 1;">
+        <div class="ctrl">
+          <label>Spread (Radius) <span id="val-spread">300</span></label>
+          <input type="range" class="std-range" id="sl-spread" min="50" max="500" value="300" oninput="document.getElementById('val-spread').innerText=this.value">
+        </div>
+        <div class="ctrl">
+          <label>Flattening (W:H) <span id="val-flat">0.7</span></label>
+          <input type="range" class="std-range" id="sl-flat" min="0.1" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('val-flat').innerText=this.value">
+        </div>
+        <div class="ctrl">
+          <label>Grid Snap (%) <span id="val-snap">0</span></label>
+          <input type="range" class="std-range" id="sl-snap" min="0" max="100" value="0" oninput="document.getElementById('val-snap').innerText=this.value">
+        </div>
+        <div class="ctrl">
+          <label>Z-Layers <span id="val-z">9</span></label>
+          <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value">
+        </div>
+        
+        <!-- Re-Added Dual Slider for Tile Generation -->
+        <div class="ctrl" style="margin-top:0.5rem">
+          <label>Copies per Char <span id="val-copies-total">~60 Tiles</span></label>
+          <div class="prob-track">
+            <div id="pt-6" class="pt-seg pt-6">6 (50%)</div>
+            <div id="pt-9" class="pt-seg pt-9">9 (25%)</div>
+            <div id="pt-12" class="pt-seg pt-12">12 (25%)</div>
+          </div>
+          <div class="range-slider">
+            <input type="range" id="sl-p1" min="0" max="100" step="5" value="50" oninput="updateProbUI()">
+            <input type="range" id="sl-p2" min="0" max="100" step="5" value="75" oninput="updateProbUI()">
+          </div>
+        </div>
+
+        <!-- Re-Added Distribution Checkboxes -->
+        <div>
+          <div class="menu-subtitle" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">Z-Distributions</div>
+          <div class="ctrl-dist">
+            <label class="dist-row"><input type="checkbox" id="dist-uni" checked><span>Uniform</span><div class="graph uni"><span></span><span></span><span></span></div></label>
+            <label class="dist-row"><input type="checkbox" id="dist-front"><span>Front-heavy (Top)</span><div class="graph front"><span></span><span></span><span></span></div></label>
+            <label class="dist-row"><input type="checkbox" id="dist-back" checked><span>Back-heavy (Bot)</span><div class="graph back"><span></span><span></span><span></span></div></label>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="btn btn-secondary" style="margin-top: 1.5rem;" id="backToMainFromOptions">Back to Menu</button>
+    </div>
+  </div>
+
+  <div id="view-game" class="view hide">
+    
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <button class="menu-btn-global mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div id="sidebar">
+      <div class="col-title" id="game-sidebar-title" style="font-size: 1.6rem; margin-bottom: 1rem; margin-top: 2.5rem;">Level Name</div>
+        
+      <div class="best-stats-box compact-stats">
+        <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="game-stat-time">--</span></div>
+        <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="game-stat-score">--</span></div>
+      </div>
+
+      <div class="menu-subtitle" style="margin-bottom: 0.5rem; font-size: 0.8rem;">Character Preview</div>
+      <div id="game-preview-chars" class="compact-preview"></div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.6rem;">
+        <button class="btn" id="game-retry-btn">Retry Level</button>
+        <button class="btn btn-secondary" id="game-back-lvl-btn">Back to Library</button>
+        <button class="btn btn-secondary" id="game-back-main-btn">Main Menu</button>
+      </div>
+    </div>
+
+    <div id="game-col">
+      <div id="info-corner">
+        <div id="ic-lvl" class="info-lvl">Level 1</div>
+        <div id="ic-zen" class="hide"><div id="ic-stamp" class="info-stamp hide">阅</div></div>
+        <div id="ic-score" class="hide"><div id="ic-score-v" class="info-sub">0</div><div id="ic-combo-v" class="info-combo">COMBO ×1</div><div id="ic-combo-track"><div id="ic-combo-fill"></div></div></div>
+        <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
+      </div>
+      
+      <div id="board-wrapper-spacer">
+        <div id="board-container"><div id="board"></div></div>
+      </div>
+      
+      <div id="buf-wrapper-spacer">
+        <div id="buf-container">
+          <div id="buf-area">
+            <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
+            <div id="slots"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="overlay-inner">
+      <div id="ov-title">Level Cleared</div>
+      <div id="ov-stats-display" class="ov-stats"></div>
+      <div class="ov-rules" id="ov-msg">Your mind is sharp.</div>
+      <button class="btn" id="ov-next-btn">Next Level ▶</button>
+      <button class="btn btn-secondary" id="ov-menu-btn">Main Menu</button>
+    </div>
+  </div>
+
+</div> <!-- End App Root -->
+
+<script>
+'use strict';
+
+function $(id) { return document.getElementById(id); }
+
+// ==================== FULLSCREEN & SIDEBAR ====================
+function enterFullscreen() {
+  const doc = document.documentElement;
+  if (doc.requestFullscreen) doc.requestFullscreen().catch(() => {});
+  else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen().catch(() => {});
+  else if (doc.msRequestFullscreen) doc.msRequestFullscreen().catch(() => {});
+}
+
+function toggleSidebar() {
+  $('sidebar').classList.toggle('open');
+  $('sidebar-overlay').classList.toggle('open');
+}
+
+// ==================== FONT MANAGEMENT ====================
+const AVAILABLE_FONTS =[
+  { name: 'Noto Serif (Classic)', val: "'Noto Serif SC', serif" },
+  { name: 'Noto Sans (Modern)', val: "'Noto Sans SC', sans-serif" },
+  { name: 'Ma Shan Zheng (Brush)', val: "'Ma Shan Zheng', cursive" },
+  { name: 'Zhi Mang Xing (Calligraphy)', val: "'Zhi Mang Xing', cursive" },
+  { name: 'ZCOOL (Printed)', val: "'ZCOOL QingKe HuangYou', cursive" },
+  { name: 'Long Cang (Cursive)', val: "'Long Cang', cursive" }
+];
+
+let savedFonts = JSON.parse(localStorage.getItem('scholarMatchFontsV7')) || {
+  d1:[AVAILABLE_FONTS[0].val],
+  d2:[AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val],
+  d3:[AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val, AVAILABLE_FONTS[2].val]
+};
+
+function initFontOptions() {
+  const selects =['d1-f1', 'd2-f1', 'd2-f2', 'd3-f1', 'd3-f2', 'd3-f3'];
+  selects.forEach(id => {
+    const sel = $(id);
+    if(!sel) return;
+    AVAILABLE_FONTS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.val; opt.textContent = f.name;
+      sel.appendChild(opt);
+    });
+  });
+  
+  if ($('d1-f1')) {
+    $('d1-f1').value = savedFonts.d1[0] || AVAILABLE_FONTS[0].val;
+    $('d2-f1').value = savedFonts.d2[0] || AVAILABLE_FONTS[0].val;
+    $('d2-f2').value = savedFonts.d2[1] || AVAILABLE_FONTS[1].val;
+    $('d3-f1').value = savedFonts.d3[0] || AVAILABLE_FONTS[0].val;
+    $('d3-f2').value = savedFonts.d3[1] || AVAILABLE_FONTS[1].val;
+    $('d3-f3').value = savedFonts.d3[2] || AVAILABLE_FONTS[2].val;
+    validateFonts();
+  }
+}
+
+function validateFonts() {
+  if (!$('d2-f1')) return;
+  let d2f1 = $('d2-f1').value; let d2f2 = $('d2-f2').value;
+  if (d2f1 === d2f2) { d2f2 = AVAILABLE_FONTS.find(f => f.val !== d2f1).val; $('d2-f2').value = d2f2; }
+
+  let d3f1 = $('d3-f1').value; let d3f2 = $('d3-f2').value; let d3f3 = $('d3-f3').value;
+  if (d3f2 === d3f1) { d3f2 = AVAILABLE_FONTS.find(f => f.val !== d3f1 && f.val !== d3f3).val; $('d3-f2').value = d3f2; }
+  if (d3f3 === d3f1 || d3f3 === d3f2) { d3f3 = AVAILABLE_FONTS.find(f => f.val !== d3f1 && f.val !== d3f2).val; $('d3-f3').value = d3f3; }
+
+  $('p-d1-f1').style.fontFamily = $('d1-f1').value;
+  $('p-d2-f1').style.fontFamily = $('d2-f1').value; $('p-d2-f2').style.fontFamily = $('d2-f2').value;
+  $('p-d3-f1').style.fontFamily = $('d3-f1').value; $('p-d3-f2').style.fontFamily = $('d3-f2').value; $('p-d3-f3').style.fontFamily = $('d3-f3').value;
+
+  savedFonts = { d1:[$('d1-f1').value], d2:[d2f1, d2f2], d3:[d3f1, d3f2, d3f3] };
+  localStorage.setItem('scholarMatchFontsV7', JSON.stringify(savedFonts));
+}
+
+// ==================== FALLBACK LEVEL DATA ====================
+const FALLBACK_LEVELS =[
+  { level: 1, name: "Foundation & Slants", chars:['人','入','八','十','丁','七','厂','卜','乙','一'] },
+  { level: 2, name: "Earth & Tools",       chars:['土','士','工','干','于','下','大','才','寸','万'] },
+  { level: 3, name: "Flowing Water",       chars:['水','冰','永','求','泉','泰','江','河','湖','海'] },
+  { level: 4, name: "Mind & Spirit",       chars:['心','必','忆','忘','忠','念','忽','怒','思','怨'] }
+];
+
+let GAME_LEVELS =[];
+if (typeof HANZI_LIBRARY !== 'undefined' && HANZI_LIBRARY.length > 0) {
+  GAME_LEVELS = HANZI_LIBRARY.map(l => ({ level: l.level, name: l.name, chars: (l.chars || l.pool ||[]).slice(0, 10) }));
+} else {
+  GAME_LEVELS = FALLBACK_LEVELS;
+}
+
+// ==================== STATS DATA ====================
+let userStats = JSON.parse(localStorage.getItem('scholarMatchStatsV7')) || {};
+
+function saveStat(lvlIdx, diff, mode, val) {
+  if (!userStats[lvlIdx]) userStats[lvlIdx] = {};
+  if (!userStats[lvlIdx][diff]) userStats[lvlIdx][diff] = {};
+  
+  if (mode === 'score') {
+    if (!userStats[lvlIdx][diff].score || val > userStats[lvlIdx][diff].score) userStats[lvlIdx][diff].score = val;
+  } else if (mode === 'time') {
+    if (!userStats[lvlIdx][diff].time || val < userStats[lvlIdx][diff].time) userStats[lvlIdx][diff].time = val;
+  }
+  userStats[lvlIdx][diff].cleared = true; 
+  localStorage.setItem('scholarMatchStatsV7', JSON.stringify(userStats));
+}
+
+function resetProgression() {
+  if(confirm("Are you sure you want to reset all your progression, best scores, and times?")) {
+    userStats = {};
+    localStorage.removeItem('scholarMatchStatsV7');
+    if (viewActive === 'levels') renderLevelGrid();
+    updatePreviewStats(currentLevelIndex, currentDifficulty);
+    alert("Progression reset successfully.");
+  }
+}
+
+// ==================== STATE & CONSTANTS ====================
+const TW = 60, TH = 80;
+const BW = 1100, BH = 700; 
+const MAX_BUF = 7;
+const MATCH_N = 3;
+const COMBO_MS = 5000;
+const LVLS_PER_PAGE = 25;
+
+let currentLevelIndex = 0;
+let currentPage = 0;
+let currentDifficulty = 1; 
+let gameMode = 'zen'; 
+let viewActive = 'main';
+
+let tiles =[], buffer =[];
+let score = 0, combo = 1;
+let comboTid = null, comboIntv = null;
+let matching = false, gameActive = false;
+
+let musicAllowed = false;
+let musicFailed = false;
+let bgm = null;
+let timeElapsed = 0;
+let timeIntv = null;
+
+// ==================== LOCAL MUSIC SYSTEM ====================
+function initMusic() {
+  bgm = $('bgm');
+  if (!bgm) return;
+  bgm.volume = parseFloat($('sl-vol')?.value || 0.5);
+}
+function startMusic() {
+  if (!bgm || musicAllowed === false || musicFailed) return;
+  if (bgm.paused) {
+    let playPromise = bgm.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(e => { console.warn("Could not load local 'music.mp3'. Audio is disabled."); musicFailed = true; });
+    }
+  }
+}
+function ensureMusic() {
+  if (!musicAllowed) { musicAllowed = true; initMusic(); startMusic(); } 
+  else if (bgm && bgm.paused && !musicFailed) { startMusic(); }
+}
+
+// ==================== UI & NAVIGATION ====================
+function applySmartDefaults() {
+  if (window.innerWidth <= 950 || window.innerHeight <= 600) {
+    $('sl-ui').value = 1.0;
+    $('sl-game').value = 0.6; 
+    $('sl-spread').value = 200;
+  }
+}
+
+function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`view-${v}`).classList.add('hide'));
+  $(`view-${viewName}`).classList.remove('hide');
+  $('overlay').style.display = 'none';
+  gameActive = (viewName === 'game');
+  viewActive = viewName;
+  
+  if($('sidebar')) $('sidebar').classList.remove('open');
+  if($('sidebar-overlay')) $('sidebar-overlay').classList.remove('open');
+  
+  if (viewName === 'levels') renderLevelGrid();
+
+  if (viewName !== 'game') {
+    if (comboTid) clearTimeout(comboTid);
+    if (comboIntv) clearInterval(comboIntv);
+    if (timeIntv) clearInterval(timeIntv);
+  }
+}
+
+function switchOptionsTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.toggle('active', content.id === 'tab-' + tabName));
+}
+
+function updateOptionsUI() {
+  const uiVal = parseFloat($('sl-ui').value);
+  const gameVal = parseFloat($('sl-game').value);
+  $('val-ui').innerText = uiVal.toFixed(1) + 'x';
+  $('val-game').innerText = gameVal.toFixed(1) + 'x';
+  document.documentElement.style.setProperty('--ui-scale', uiVal);
+  document.documentElement.style.setProperty('--game-scale', gameVal);
+  if (bgm) bgm.volume = parseFloat($('sl-vol').value);
+  $('val-vol').innerText = Math.round(parseFloat($('sl-vol').value) * 100) + '%';
+}
+
+function updateProbUI() {
+  let v1 = parseInt($('sl-p1').value);
+  let v2 = parseInt($('sl-p2').value);
+  if (v1 > v2) { v1 = v2; $('sl-p1').value = v1; }
+  const p6 = v1, p9 = v2 - v1, p12 = 100 - v2;
+  const pt6 = $('pt-6'), pt9 = $('pt-9'), pt12 = $('pt-12');
+  if (pt6) { pt6.style.width = p6 + '%'; pt6.innerText = p6 > 8 ? `6 (${p6}%)` : ''; }
+  if (pt9) { pt9.style.width = p9 + '%'; pt9.innerText = p9 > 8 ? `9 (${p9}%)` : ''; }
+  if (pt12) { pt12.style.width = p12 + '%'; pt12.innerText = p12 > 8 ? `12 (${p12}%)` : ''; }
+  
+  const expected = Math.round(10 * ((p6/100)*6 + (p9/100)*9 + (p12/100)*12));
+  $('val-copies-total').innerText = `~${expected} Tiles`;
+}
+
+function formatTime(s) { return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+
+function setMode(mode) {
+  gameMode = mode;
+  document.querySelectorAll('.btn-mode[data-mode]').forEach(b => {
+    if(b.dataset.mode === mode) b.classList.add('active-mode');
+    else b.classList.remove('active-mode');
+  });
+}
+
+function setDifficulty(diff) {
+  currentDifficulty = diff;
+  document.querySelectorAll('.btn-diff').forEach(b => {
+    if(parseInt(b.dataset.diff) === diff) b.classList.add('active-mode');
+    else b.classList.remove('active-mode');
+  });
+  if (currentLevelIndex >= 0) updatePreviewStats(currentLevelIndex, currentDifficulty);
+}
+
+function updatePreviewStats(idx, diff) {
+  const stats = userStats[idx]?.[diff] || {};
+  $('stat-best-time').textContent = stats.time ? formatTime(stats.time) : '--';
+  $('stat-best-score').textContent = stats.score ? stats.score.toLocaleString() : '--';
+  if (viewActive === 'game') {
+    $('game-stat-time').textContent = stats.time ? formatTime(stats.time) : '--';
+    $('game-stat-score').textContent = stats.score ? stats.score.toLocaleString() : '--';
+  }
+}
+
+function showPreview(idx) {
+  currentLevelIndex = idx;
+  const lvl = GAME_LEVELS[idx];
+  document.querySelectorAll('#lvl-list .btn-lvl').forEach((b) => {
+    if (parseInt(b.dataset.idx) === idx) b.classList.add('selected-lvl');
+    else b.classList.remove('selected-lvl');
+  });
+  $('preview-title').textContent = `${lvl.name}`;
+  updatePreviewStats(idx, currentDifficulty);
+  const grid = $('preview-chars');
+  grid.innerHTML = '';
+  lvl.chars.forEach(c => {
+    const div = document.createElement('div'); div.className = 'preview-char'; div.textContent = c; grid.appendChild(div);
+  });
+}
+
+function updateGameSidebar(idx) {
+  const lvl = GAME_LEVELS[idx];
+  $('game-sidebar-title').textContent = `${lvl.name}`;
+  updatePreviewStats(idx, currentDifficulty);
+  const grid = $('game-preview-chars');
+  grid.innerHTML = '';
+  lvl.chars.forEach(c => {
+    const div = document.createElement('div'); div.className = 'compact-char'; div.textContent = c; grid.appendChild(div);
+  });
+}
+
+function renderLevelGrid() {
+  const lvlContainer = $('lvl-list');
+  lvlContainer.innerHTML = '';
+  const startIdx = currentPage * LVLS_PER_PAGE;
+  const endIdx = Math.min(startIdx + LVLS_PER_PAGE, GAME_LEVELS.length);
+  for (let i = startIdx; i < endIdx; i++) {
+    const lvl = GAME_LEVELS[i];
+    const btn = document.createElement('button');
+    btn.className = 'btn-lvl'; btn.dataset.idx = i;
+    if (i === currentLevelIndex) btn.classList.add('selected-lvl');
+    
+    const txtSpan = document.createElement('span'); txtSpan.textContent = `Level ${lvl.level}`;
+    btn.appendChild(txtSpan);
+
+    const stats = userStats[i] || {};
+    let sealsHtml = '<div class="lvl-seal-container">';
+    if (stats[1]?.cleared) sealsHtml += '<span class="lvl-seal seal-d1">壹</span>';
+    if (stats[2]?.cleared) sealsHtml += '<span class="lvl-seal seal-d2">贰</span>';
+    if (stats[3]?.cleared) sealsHtml += '<span class="lvl-seal seal-d3">叁</span>';
+    sealsHtml += '</div>';
+    btn.innerHTML += sealsHtml;
+
+    btn.onclick = () => { ensureMusic(); showPreview(i); };
+    btn.ondblclick = () => { ensureMusic(); enterFullscreen(); startLevel(i); };
+    lvlContainer.appendChild(btn);
+  }
+
+  const pageControls = $('lvl-pagination');
+  if (GAME_LEVELS.length > LVLS_PER_PAGE) {
+    pageControls.classList.remove('hide');
+    $('page-indicator').textContent = `${currentPage + 1} / ${Math.ceil(GAME_LEVELS.length / LVLS_PER_PAGE)}`;
+    $('btn-prev-page').disabled = currentPage === 0;
+    $('btn-next-page').disabled = (currentPage + 1) * LVLS_PER_PAGE >= GAME_LEVELS.length;
+  } else { pageControls.classList.add('hide'); }
+}
+
+function changePage(dir) { currentPage += dir; renderLevelGrid(); }
+
+function initMenu() {
+  applySmartDefaults();
+  initFontOptions();
+  renderLevelGrid();
+  if (GAME_LEVELS.length > 0) showPreview(0);
+
+  $('preview-play-btn').onclick = () => { ensureMusic(); enterFullscreen(); startLevel(currentLevelIndex); };
+  $('startFromMenuBtn').onclick = () => { ensureMusic(); enterFullscreen(); navTo('levels'); };
+  $('optionsFromMenuBtn').onclick = () => { ensureMusic(); enterFullscreen(); navTo('options'); };
+  $('backToMainFromLevels').onclick = () => { ensureMusic(); navTo('main'); };
+  $('backToMainFromOptions').onclick = () => { ensureMusic(); navTo('main'); };
+  
+  $('game-retry-btn').onclick = () => { ensureMusic(); startLevel(currentLevelIndex); };
+  $('game-back-lvl-btn').onclick = () => { ensureMusic(); navTo('levels'); };
+  $('game-back-main-btn').onclick = () => { ensureMusic(); navTo('main'); };
+
+  $('sl-ui').oninput = updateOptionsUI;
+  $('sl-game').oninput = updateOptionsUI;
+  $('sl-vol').oninput = updateOptionsUI;
+  $('sl-p1').oninput = updateProbUI;
+  $('sl-p2').oninput = updateProbUI;
+
+  updateOptionsUI();
+  updateProbUI();
+  navTo('main');
+}
+
+// ==================== GAME LOGIC ====================
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] =[arr[j], arr[i]]; } return arr;
+}
+function overlaps(ax, ay, bx, by) {
+  const m = 2; return !(ax + TW - m <= bx + m || bx + TW - m <= ax + m || ay + TH - m <= by + m || by + TH - m <= ay + m);
+}
+
+function updateScoreUI() { $('ic-score-v').textContent = score.toLocaleString(); }
+function updateTimeUI() { $('ic-time-v').textContent = formatTime(timeElapsed); }
+function updateComboUI() { $('ic-combo-v').textContent = `COMBO ×${combo}`; }
+
+function triggerCombo() {
+  if(gameMode !== 'score') return;
+  combo = Math.min(combo + 1, 8); updateComboUI();
+  clearTimeout(comboTid); clearInterval(comboIntv);
+  const fill = $('ic-combo-fill'); fill.style.transition = 'none'; fill.style.width = '100%';
+  const t0 = Date.now();
+  comboIntv = setInterval(() => {
+    const pct = Math.max(0, 100 - (Date.now() - t0) / COMBO_MS * 100);
+    fill.style.width = pct + '%';
+    if (pct <= 0) clearInterval(comboIntv);
+  }, 40);
+  comboTid = setTimeout(() => { combo = 1; updateComboUI(); clearInterval(comboIntv); fill.style.width = '0%'; }, COMBO_MS);
+}
+
+function renderSlots(animUid) {
+  const slotsEl = $('slots'); slotsEl.innerHTML = '';
+  for (let i = 0; i < MAX_BUF; i++) {
+    const slotDiv = document.createElement('div'); slotDiv.className = 'slot';
+    if (buffer[i]) {
+      const t = buffer[i];
+      const bt = document.createElement('div'); bt.className = 'btile' + (t.uid === animUid ? ' entering' : '');
+      bt.innerHTML = `<span class="ch" style="font-family: ${t.font}">${t.char}</span>`;
+      slotDiv.appendChild(bt);
+    }
+    slotsEl.appendChild(slotDiv);
+  }
+  $('buf-cnt').textContent = `${buffer.length} / ${MAX_BUF}`;
+}
+
+function recalcFree() {
+  const onBoard = tiles.filter(t => t.onBoard);
+  onBoard.forEach(tile => {
+    tile.blocked = onBoard.some(o => o.zIndex > tile.zIndex && overlaps(tile.x, tile.y, o.x, o.y));
+    tile.el.className = 'tile ' + (tile.blocked ? 'blocked' : 'free');
+  });
+}
+
+function checkMatch() {
+  if (matching) return;
+  let matchIdx = -1;
+  for (let i = 0; i <= buffer.length - MATCH_N; i++) {
+    if (buffer[i].char === buffer[i+1].char && buffer[i+1].char === buffer[i+2].char) { matchIdx = i; break; }
+  }
+  if (matchIdx >= 0) {
+    matching = true;
+    const slotsDiv = $('slots');
+    for (let i = matchIdx; i < matchIdx + MATCH_N; i++) {
+      const child = slotsDiv.children[i]?.firstElementChild; if (child) child.classList.add('clear-anim');
+    }
+    setTimeout(() => {
+      buffer.splice(matchIdx, MATCH_N);
+      if(gameMode === 'score') { score += 100 * combo; updateScoreUI(); triggerCombo(); }
+      renderSlots(null); matching = false; checkMatch(); checkWinCondition();
+    }, 390);
+  } else {
+    if (buffer.length >= MAX_BUF) setTimeout(() => showGameEnd(false), 100);
+    else checkWinCondition();
+  }
+}
+
+function clickTile(tile) {
+  if (!gameActive || matching || tile.blocked || !tile.onBoard || buffer.length >= MAX_BUF) return;
+  ensureMusic();
+  tile.onBoard = false; tile.el.classList.add('leaving');
+  setTimeout(() => { if(tile.el.parentNode) tile.el.remove(); }, 200);
+  recalcFree();
+  buffer.push({ ...tile }); buffer.sort((a,b) => a.char.localeCompare(b.char));
+  renderSlots(tile.uid);
+  setTimeout(checkMatch, 60);
+}
+
+function checkWinCondition() { if (tiles.every(t => !t.onBoard) && buffer.length === 0) showGameEnd(true); }
+
+function showGameEnd(won) {
+  gameActive = false; clearTimeout(comboTid); clearInterval(comboIntv); clearInterval(timeIntv);
+  
+  $('ov-title').textContent = won ? "Level Cleared" : "Clouded Mind";
+  $('ov-title').style.color = won ? 'var(--ink)' : '#d00000';
+  $('ov-msg').textContent = won ? "Harmony Achieved." : "The buffer overflowed with unresolved thoughts.";
+  $('ov-next-btn').style.display = (won && currentLevelIndex < GAME_LEVELS.length - 1) ? 'block' : 'none';
+  
+  const statsDisplay = $('ov-stats-display');
+  if(won) {
+    if(gameMode === 'zen') { $('ic-stamp').classList.remove('hide'); saveStat(currentLevelIndex, currentDifficulty, 'zen', 0); }
+    if(gameMode === 'time') { saveStat(currentLevelIndex, currentDifficulty, 'time', timeElapsed); statsDisplay.textContent = `Clear Time: ${formatTime(timeElapsed)}`; }
+    else if(gameMode === 'score') { saveStat(currentLevelIndex, currentDifficulty, 'score', score); statsDisplay.textContent = `Final Score: ${score.toLocaleString()}`; }
+    else { statsDisplay.textContent = ''; }
+  } else { statsDisplay.textContent = ''; }
+
+  let retryBtn = $('ov-retry-btn');
+  if(!retryBtn) {
+    retryBtn = document.createElement('button'); retryBtn.className = 'btn'; retryBtn.id = 'ov-retry-btn';
+    $('overlay-inner').insertBefore(retryBtn, $('ov-menu-btn'));
+  }
+  retryBtn.style.display = (!won || currentLevelIndex >= GAME_LEVELS.length - 1) ? 'block' : 'none';
+  retryBtn.textContent = won ? "Play Again ▶" : "Retry Level ▶";
+  retryBtn.onclick = () => { ensureMusic(); startLevel(currentLevelIndex); };
+
+  $('ov-next-btn').onclick = () => { ensureMusic(); nextLevel(); };
+  $('ov-menu-btn').onclick = () => { ensureMusic(); navTo('main'); };
+
+  $('overlay').style.display = 'flex';
+}
+
+function nextLevel() { if (currentLevelIndex < GAME_LEVELS.length - 1) startLevel(currentLevelIndex + 1); else navTo('main'); }
+
+function startLevel(lvlIdx) {
+  if(!GAME_LEVELS || GAME_LEVELS.length === 0) return;
+  navTo('game'); currentLevelIndex = lvlIdx;
+  score = 0; tiles =[]; buffer =[]; combo = 1; matching = false; gameActive = true;
+  
+  updateGameSidebar(lvlIdx);
+
+  clearTimeout(comboTid); clearInterval(comboIntv); clearInterval(timeIntv);
+  $('ic-combo-fill').style.width = '0%';
+  
+  $('ic-lvl').textContent = `Level ${GAME_LEVELS[currentLevelIndex].level}`;
+  $('ic-zen').classList.toggle('hide', gameMode !== 'zen');
+  $('ic-score').classList.toggle('hide', gameMode !== 'score');
+  $('ic-time').classList.toggle('hide', gameMode !== 'time');
+
+  const isCleared = userStats[currentLevelIndex]?.[currentDifficulty]?.cleared;
+  $('ic-stamp').classList.toggle('hide', !isCleared);
+
+  if (gameMode === 'time') { timeElapsed = 0; updateTimeUI(); timeIntv = setInterval(() => { timeElapsed++; updateTimeUI(); }, 1000); }
+  updateScoreUI(); updateComboUI();
+  
+  const board = $('board'); board.innerHTML = '';
+  const spread = parseInt($('sl-spread').value); const flat = parseFloat($('sl-flat').value) || 0.7; 
+  const snap = parseInt($('sl-snap').value); const zLayers = parseInt($('sl-z').value);
+
+  const v1 = parseInt($('sl-p1').value);
+  const v2 = parseInt($('sl-p2').value);
+  
+  const dists =[];
+  if ($('dist-uni').checked) dists.push('uniform');
+  if ($('dist-front').checked) dists.push('front');
+  if ($('dist-back').checked) dists.push('back');
+  if (dists.length === 0) { dists.push('uniform'); $('dist-uni').checked = true; }
+
+  let levelFonts = savedFonts[`d${currentDifficulty}`] ||[AVAILABLE_FONTS[0].val];
+
+  let deck =[]; let idCounter = 0;
+  
+  GAME_LEVELS[currentLevelIndex].chars.forEach(char => {
+    const dist = dists[Math.floor(Math.random() * dists.length)];
+    
+    // Setup Font array per Difficulty
+    let fontAssignments =[];
+    
+    let copies = 6;
+    const roll = Math.random() * 100;
+    if (roll >= v1 && roll < v2) copies = 9;
+    else if (roll >= v2) copies = 12;
+
+    // Distribute Fonts evenly across the requested copies
+    if (currentDifficulty === 1) {
+      fontAssignments = Array(copies).fill(levelFonts[0]);
+    } else if (currentDifficulty === 2) {
+      let half = copies / 2;
+      fontAssignments = [...Array(half).fill(levelFonts[0]), ...Array(half).fill(levelFonts[1])];
+    } else if (currentDifficulty === 3) {
+      let third = copies / 3;
+      fontAssignments =[...Array(third).fill(levelFonts[0]), ...Array(third).fill(levelFonts[1]), ...Array(third).fill(levelFonts[2])];
+    }
+    shuffleArray(fontAssignments);
+
+    for (let c = 0; c < copies; c++) {
+      let u = Math.random(); let norm = u;
+      if (dist === 'front') norm = Math.sqrt(u); else if (dist === 'back') norm = 1 - Math.sqrt(u);
+      let layer = Math.floor(norm * zLayers); if (layer >= zLayers) layer = zLayers - 1;
+      deck.push({ char, layer, uid: `t${idCounter}_${c}`, font: fontAssignments[c] });
+    }
+    idCounter++;
+  });
+  shuffleArray(deck); deck.sort((a,b) => a.layer - b.layer);
+
+  const stepX = TW/2, stepY = TH/2; const cx = BW/2 - TW/2, cy = BH/2 - TH/2; const snapFactor = snap / 100;
+  deck.forEach((item, idx) => {
+    let finalX, finalY;
+    for (let attempt = 0; attempt < 500; attempt++) {
+      const angle = Math.random() * Math.PI * 2; const r = Math.sqrt(Math.random()) * spread;
+      let px = cx + Math.cos(angle) * r; let py = cy + Math.sin(angle) * r * flat;
+      let snappedX = Math.round(px / stepX) * stepX; let snappedY = Math.round(py / stepY) * stepY;
+      px = px * (1 - snapFactor) + snappedX * snapFactor; py = py * (1 - snapFactor) + snappedY * snapFactor;
+      let visualX = Math.max(0, Math.min(BW - TW, px - item.layer * 4)); let visualY = Math.max(0, Math.min(BH - TH, py - item.layer * 4));
+      
+      let collision = false;
+      for (let j = 0; j < tiles.length; j++) {
+        let other = tiles[j];
+        if (other.layer === item.layer && Math.abs(visualX - other.x) < TW - 2 && Math.abs(visualY - other.y) < TH - 2) { collision = true; break; }
+      }
+      finalX = visualX; finalY = visualY;
+      if (!collision) break;
+    }
+    const el = document.createElement('div'); el.className = 'tile blocked'; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; el.style.zIndex = idx;
+    el.innerHTML = `<span class="ch" style="font-family: ${item.font}">${item.char}</span>`;
+    const tileObj = { ...item, x: finalX, y: finalY, zIndex: idx, el, onBoard: true, blocked: true };
+    el.addEventListener('click', () => clickTile(tileObj));
+    board.appendChild(el); tiles.push(tileObj);
+  });
+  recalcFree(); renderSlots(null);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof GAME_LEVELS !== 'undefined') initMenu();
+  document.body.addEventListener('click', () => ensureMusic(), { once: false });
+});
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <!-- Crucial Mobile Meta Tags for "App-like" Fullscreen (No URL bar if added to Home Screen) -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
