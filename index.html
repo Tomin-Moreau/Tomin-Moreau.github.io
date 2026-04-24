@@ -27,6 +27,7 @@
   --blocked-bg: #c9bfab;
   --blocked-ink: #7b7569;
   --ui-scale: 1.5;
+  --buf-scale: 1; /* Dynamic safety scale for tiny screens */
   --tile-font: 'Noto Serif SC', serif;
 }
 
@@ -46,7 +47,7 @@ body {
 
 #app-root {
   width: 100vw; height: 100dvh;
-  display: flex;
+  display: flex; overflow: hidden;
 }
 
 .view {
@@ -189,7 +190,7 @@ body {
 /* Controls */
 .ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1.2rem; }
 .ctrl label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
-/* touch-action: pan-y ALLOWS vertical scrolling over the slider without changing the slider's value! */
+/* touch-action: pan-y ALLOWS vertical scrolling over the slider */
 .ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; touch-action: pan-y; margin-top: 0.2rem; margin-bottom: 0.2rem; }
 .ctrl-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;}
 .ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
@@ -258,17 +259,17 @@ body {
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 399; }
 .sidebar-overlay.open { display: block; }
 
-/* ─────────── GAME COLUMN & AUTO-FIT LOGIC ─────────── */
+/* ─────────── TRUE RESPONSIVE GAME COLUMN ─────────── */
 #game-col {
   flex: 1; width: 100vw; height: 100dvh;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex; flex-direction: column; /* Default: Buffer Bottom */
   position: relative; background: var(--bg);
-  overflow: hidden; /* ABSOLUTELY NO SCROLLBARS */
+  overflow: hidden; 
 }
 
-/* BIG CORNER INFO */
+/* BIG CORNER INFO - Stays Absolute to Board Container so it doesn't overlap buffer */
 #info-corner {
-  position: absolute; top: 2rem; right: 3rem; text-align: right; z-index: 100; pointer-events: none; 
+  position: absolute; top: 1.5rem; right: 2rem; text-align: right; z-index: 100; pointer-events: none; 
 }
 .info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
 .info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
@@ -284,20 +285,45 @@ body {
   margin-top: 1rem; font-weight: 700; opacity: 0.85; background: var(--bg);
 }
 
-/* Logical strict boundaries for auto-fit sizing */
-#logical-game-area {
-  position: relative;
-  transform-origin: center center;
+/* Board Wrapper takes remaining space */
+#board-container {
+  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; min-width: 0; min-height: 0;
 }
-#board {
-  position: absolute; left: 0; top: 0;
-  width: 1100px; height: 700px;
+
+/* Logical anchor centered within the container */
+#board { position: relative; width: 0; height: 0; }
+
+/* ─────────── RESPONSIVE BUFFER ─────────── */
+#buf-container {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg); border-top: 2px solid var(--ink); z-index: 100; padding: 15px;
 }
-#buf-area { 
-  position: absolute;
-  background: var(--panel); border: 3px solid var(--ink); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 5px 5px 0 var(--ink);
+#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; width: 100%; max-width: 480px; }
+#buf-title { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
+#buf-cnt { font-size: 18px; font-weight: 700; color: var(--ink); }
+#slots { display: flex; gap: 8px; justify-content: center; }
+
+/* Buffer Scaling System (so tiny screens never clip slots) */
+.slot { 
+  width: calc(60px * var(--buf-scale)); 
+  height: calc(80px * var(--buf-scale)); 
+  border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; 
+}
+.btile {
+  position: absolute; inset: -2px; border-radius: 4px;
+  background: var(--tile-bg); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; 
+  box-shadow: calc(2px * var(--buf-scale)) calc(2px * var(--buf-scale)) 0 var(--ink);
+}
+.btile .ch { font-size: calc(42px * var(--buf-scale)); font-weight: 700; color: var(--ink); }
+.btile.entering { animation: btIn .2s ease-out both; }
+@keyframes btIn { from { transform: translateY(calc(-15px * var(--buf-scale))); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btile.clear-anim { animation: btClear .38s ease-in forwards; }
+@keyframes btClear {
+  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
+  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
+  100% { transform: scale(0); opacity: 0; }
 }
 
 /* ─────────── TILES ─────────── */
@@ -305,36 +331,16 @@ body {
   position: absolute; width: 60px; height: 80px; border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
   user-select: none; border: 2px solid var(--ink);
+  margin-left: -30px; margin-top: -40px; /* Absolutely centers the tile on its X,Y logic coordinates */
   transition: background 0.15s ease, filter 0.15s;
 }
-/* IMPORTANT: Hardcode tile text size in PX so UI Scale doesn't mess it up! */
+/* Static pixel sizes perfectly protect tiles from breaking when users adjust "Menu UI Scale" */
 .tile .ch { font-size: 42px; font-weight: 700; line-height: 1; color: inherit; }
 .tile.blocked { background: var(--blocked-bg); color: var(--blocked-ink); border-color: var(--blocked-ink); cursor: not-allowed; }
 .tile.free { background: var(--tile-bg); color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); pointer-events: auto; }
 .tile.free:hover { background: var(--tile-hover); }
 .tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
 @keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
-
-#buf-hdr { display: flex; justify-content: space-between; align-items: center; }
-/* Hardcode buffer text sizes in PX */
-#buf-title { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
-#buf-cnt { font-size: 18px; font-weight: 700; color: var(--ink); }
-#slots { display: flex; justify-content: center; }
-.slot { width: 60px; height: 80px; border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; }
-.btile {
-  position: absolute; inset: -2px; border-radius: 4px;
-  background: var(--tile-bg); border: 2px solid var(--ink);
-  display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--ink);
-}
-.btile .ch { font-size: 42px; font-weight: 700; color: var(--ink); }
-.btile.entering { animation: btIn .2s ease-out both; }
-@keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.btile.clear-anim { animation: btClear .38s ease-in forwards; }
-@keyframes btClear {
-  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
-  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
-  100% { transform: scale(0); opacity: 0; }
-}
 
 /* ─────────── OVERLAY (Win/Loss) ─────────── */
 #overlay {
@@ -352,9 +358,15 @@ body {
 .ov-rules { font-size: 0.9rem; color: var(--ink-light); max-width: 320px; line-height: 1.5; font-weight: 700; }
 .ov-stats { font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
 
-/* ─────────── MOBILE LANDSCAPE TWEAKS ─────────── */
-@media (max-width: 1000px) and (max-height: 600px) {
-  /* UI Compacting */
+
+/* ─────────── ORIENTATION TWEAKS ─────────── */
+/* Mobile Landscape (Squashed Heights) -> Buffer snaps to Right */
+@media (orientation: landscape) and (max-height: 600px) {
+  #game-col { flex-direction: row; }
+  #buf-container { border-top: none; border-left: 2px solid var(--ink); padding: 10px; }
+  #buf-hdr { max-width: none; flex-direction: column; align-items: flex-end; gap: 4px; margin-bottom: 10px; text-align: right; }
+  #slots { flex-direction: column; gap: 6px; }
+  
   .menu-box { padding: 1.2rem !important; }
   .menu-title { font-size: 1.8rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
   .menu-split { padding: 1rem !important; gap: 1.5rem; }
@@ -362,12 +374,12 @@ body {
   .menu-subtitle { margin-bottom: 0.5rem; }
   .mobile-menu-btn { top: 10px; left: 10px; padding: 5px 10px; font-size: 0.9rem; }
   
-  /* Game Info Shrink */
   #info-corner { top: 10px; right: 15px; text-align: right; }
   .info-lvl { font-size: 2.2rem; margin-bottom: 0; }
   .info-sub { font-size: 1.2rem; }
   .info-stamp { font-size: 1.5rem; padding: 2px 4px; margin-top: 0.2rem; }
 }
+
 </style>
 </head>
 <body>
@@ -466,7 +478,6 @@ body {
           <label>UI Scale (Menus) <span id="val-ui">1.5x</span></label>
           <input type="range" class="std-range" id="sl-ui" min="0.5" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
         </div>
-        <!-- Removed Game Scale manually. It is now Automatic. -->
         <div style="margin-top: auto; padding-top: 1.5rem; flex-shrink: 0;">
           <button class="btn btn-danger" onclick="resetProgression()">Reset Progression</button>
         </div>
@@ -508,11 +519,11 @@ body {
       <div id="tab-layout" class="tab-content">
         <div class="ctrl">
           <label>Spread (Radius) <span id="val-spread">300</span></label>
-          <input type="range" class="std-range" id="sl-spread" min="50" max="500" value="300" oninput="document.getElementById('val-spread').innerText=this.value">
+          <input type="range" class="std-range" id="sl-spread" min="50" max="500" value="300" oninput="document.getElementById('val-spread').innerText=this.value; resizeGame();">
         </div>
         <div class="ctrl">
           <label>Flattening (W:H) <span id="val-flat">0.7</span></label>
-          <input type="range" class="std-range" id="sl-flat" min="0.1" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('val-flat').innerText=this.value">
+          <input type="range" class="std-range" id="sl-flat" min="0.1" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('val-flat').innerText=this.value; resizeGame();">
         </div>
         <div class="ctrl">
           <label>Grid Snap (%) <span id="val-snap">0</span></label>
@@ -520,7 +531,7 @@ body {
         </div>
         <div class="ctrl">
           <label>Z-Layers <span id="val-z">9</span></label>
-          <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value">
+          <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value; resizeGame();">
         </div>
         <div class="ctrl" style="margin-top:0.5rem">
           <label>Copies per Char <span id="val-copies-total">~60 Tiles</span></label>
@@ -574,20 +585,25 @@ body {
       </div>
     </div>
 
+    <!-- RESPONSIVE AUTO-SCALING COLUMN -->
     <div id="game-col">
-      <div id="info-corner">
-        <div id="ic-lvl" class="info-lvl">Level 1</div>
-        <div id="ic-zen" class="hide"><div id="ic-stamp" class="info-stamp hide">阅</div></div>
-        <div id="ic-score" class="hide"><div id="ic-score-v" class="info-sub">0</div><div id="ic-combo-v" class="info-combo">COMBO ×1</div><div id="ic-combo-track"><div id="ic-combo-fill"></div></div></div>
-        <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
+      <div id="board-container">
+        <!-- Floating Info Corner -->
+        <div id="info-corner">
+          <div id="ic-lvl" class="info-lvl">Level 1</div>
+          <div id="ic-zen" class="hide"><div id="ic-stamp" class="info-stamp hide">阅</div></div>
+          <div id="ic-score" class="hide"><div id="ic-score-v" class="info-sub">0</div><div id="ic-combo-v" class="info-combo">COMBO ×1</div><div id="ic-combo-track"><div id="ic-combo-fill"></div></div></div>
+          <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
+        </div>
+        
+        <!-- Logical Center Origin -->
+        <div id="board"></div>
       </div>
       
-      <div id="logical-game-area">
-        <div id="board"></div>
-        <div id="buf-area">
-          <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
-          <div id="slots"></div>
-        </div>
+      <!-- Adaptive Buffer Area -->
+      <div id="buf-container">
+        <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
+        <div id="slots"></div>
       </div>
     </div>
   </div>
@@ -610,58 +626,53 @@ body {
 function $(id) { return document.getElementById(id); }
 
 // ==================== AUTO-FIT RESIZE LOGIC ====================
-// This ensures the board and buffer are always visible without scrolling!
+// Mathematically perfectly bounds and guarantees tiles never overflow without scrolling.
 function resizeGame() {
   if (viewActive !== 'game') return;
-  const col = $('game-col');
-  const area = $('logical-game-area');
-  const buf = $('buf-area');
-  const slots = $('slots');
-  const bufHdr = $('buf-hdr');
 
-  if (!col || !area) return;
+  const boardCont = $('board-container');
+  const board = $('board');
+  const bufCont = $('buf-container');
+  if (!boardCont || !board || !bufCont) return;
 
-  const cw = col.clientWidth;
-  const ch = col.clientHeight;
+  const cw = boardCont.clientWidth;
+  const ch = boardCont.clientHeight;
   if (cw === 0 || ch === 0) return;
 
-  // Decide if we have enough horizontal room to put the buffer on the right
-  const isWide = (cw / ch) > 1.35;
-  let logicW, logicH;
+  // 1. Calculate the maximum theoretical visual distance (radius) any tile can be from 0,0
+  const spread = parseInt($('sl-spread').value) || 300;
+  const flat = parseFloat($('sl-flat').value) || 0.7;
+  const zLayers = parseInt($('sl-z').value) || 9;
 
-  if (isWide) {
-    // Vertical Buffer configuration on the far right
-    logicW = 1250; logicH = 700;
-    buf.style.left = '1120px'; buf.style.top = '10px';
-    buf.style.width = '120px'; buf.style.height = '680px';
-    buf.style.flexDirection = 'column';
-    slots.style.flexDirection = 'column';
-    slots.style.gap = '6px';
-    bufHdr.style.flexDirection = 'column';
-    bufHdr.style.margin = '0 0 15px 0';
+  const maxLayerOffset = (zLayers - 1) * 4;
+  const maxVisualX = spread + maxLayerOffset + 30; // 30 is half of 60px tile Width
+  const maxVisualY = (spread * flat) + maxLayerOffset + 40; // 40 is half of 80px tile Height
+
+  // 2. Scale board to entirely contain this radius safely within viewport padding
+  const padding = 30; // safety border
+  const scaleX = (cw / 2 - padding) / maxVisualX;
+  const scaleY = (ch / 2 - padding) / maxVisualY;
+  const scale = Math.min(1.5, scaleX, scaleY); // Cap maximum visual scaling to 1.5x so PC tiles don't get massive
+
+  board.style.transform = `scale(${scale})`;
+
+  // 3. Dynamically scale the buffer slots if screen size is extraordinarily tight
+  let bufScale = 1;
+  const isLandscapeShort = window.innerWidth > window.innerHeight && window.innerHeight <= 600;
+  
+  if (isLandscapeShort) {
+    // Buffer is a Vertical Stack on the right
+    let reqHeight = (7 * 86) + 50; // 7 slots * height + gaps + padding
+    if (window.innerHeight < reqHeight) bufScale = window.innerHeight / reqHeight;
   } else {
-    // Horizontal Buffer configuration at the bottom
-    logicW = 1100; logicH = 850;
-    buf.style.left = '110px'; buf.style.top = '720px';
-    buf.style.width = '880px'; buf.style.height = '120px';
-    buf.style.flexDirection = 'row';
-    slots.style.flexDirection = 'row';
-    slots.style.gap = '8px';
-    bufHdr.style.flexDirection = 'column';
-    bufHdr.style.margin = '0 20px 0 0';
+    // Buffer is a Horizontal Row on the bottom
+    let reqWidth = (7 * 68) + 40; // 7 slots * width + gaps + padding
+    if (window.innerWidth < reqWidth) bufScale = window.innerWidth / reqWidth;
   }
-
-  area.style.width = logicW + 'px';
-  area.style.height = logicH + 'px';
-
-  // Find the max scale that perfectly fits this logical layout into the screen, minus a tiny 4% padding
-  const scale = Math.min(cw / logicW, ch / logicH) * 0.96;
-  area.style.transform = `scale(${scale})`;
+  document.documentElement.style.setProperty('--buf-scale', Math.min(1, bufScale));
 }
 
-// Watch window resizes
 window.addEventListener('resize', resizeGame);
-
 
 // ==================== FULLSCREEN & SIDEBAR ====================
 function enterFullscreen() {
@@ -775,7 +786,6 @@ function resetProgression() {
 
 // ==================== STATE & CONSTANTS ====================
 const TW = 60, TH = 80;
-const BW = 1100, BH = 700; 
 const MAX_BUF = 7;
 const MATCH_N = 3;
 const COMBO_MS = 5000;
@@ -836,9 +846,11 @@ function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`
   if($('sidebar-overlay')) $('sidebar-overlay').classList.remove('open');
   
   if (viewName === 'levels') renderLevelGrid();
-  
-  // Call resize strictly when entering the game screen to ensure exact fit immediately
-  if (viewName === 'game') setTimeout(resizeGame, 0); 
+
+  // Instant layout resize bound verification
+  if (viewName === 'game') {
+    setTimeout(resizeGame, 0); 
+  }
 
   if (viewName !== 'game') {
     if (comboTid) clearTimeout(comboTid);
@@ -858,7 +870,7 @@ function updateOptionsUI() {
   document.documentElement.style.setProperty('--ui-scale', uiVal);
   if (bgm) bgm.volume = parseFloat($('sl-vol').value);
   $('val-vol').innerText = Math.round(parseFloat($('sl-vol').value) * 100) + '%';
-  resizeGame(); // Recompute layout just in case
+  resizeGame();
 }
 
 function updateProbUI() {
@@ -1001,6 +1013,8 @@ function initMenu() {
 function shuffleArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] =[arr[j], arr[i]]; } return arr;
 }
+
+// True bounding box overlaps (without specific screen limitations)
 function overlaps(ax, ay, bx, by) {
   const m = 2; return !(ax + TW - m <= bx + m || bx + TW - m <= ax + m || ay + TH - m <= by + m || by + TH - m <= ay + m);
 }
@@ -1183,15 +1197,19 @@ function startLevel(lvlIdx) {
   });
   shuffleArray(deck); deck.sort((a,b) => a.layer - b.layer);
 
-  const stepX = TW/2, stepY = TH/2; const cx = BW/2 - TW/2, cy = BH/2 - TH/2; const snapFactor = snap / 100;
+  // Tiles now spawn perfectly relatively from 0,0
+  const stepX = TW/2, stepY = TH/2; const snapFactor = snap / 100;
   deck.forEach((item, idx) => {
     let finalX, finalY;
     for (let attempt = 0; attempt < 500; attempt++) {
       const angle = Math.random() * Math.PI * 2; const r = Math.sqrt(Math.random()) * spread;
-      let px = cx + Math.cos(angle) * r; let py = cy + Math.sin(angle) * r * flat;
+      let px = Math.cos(angle) * r; let py = Math.sin(angle) * r * flat;
+      
       let snappedX = Math.round(px / stepX) * stepX; let snappedY = Math.round(py / stepY) * stepY;
       px = px * (1 - snapFactor) + snappedX * snapFactor; py = py * (1 - snapFactor) + snappedY * snapFactor;
-      let visualX = Math.max(0, Math.min(BW - TW, px - item.layer * 4)); let visualY = Math.max(0, Math.min(BH - TH, py - item.layer * 4));
+      
+      let visualX = px - item.layer * 4; 
+      let visualY = py - item.layer * 4;
       
       let collision = false;
       for (let j = 0; j < tiles.length; j++) {
@@ -1201,7 +1219,8 @@ function startLevel(lvlIdx) {
       finalX = visualX; finalY = visualY;
       if (!collision) break;
     }
-    const el = document.createElement('div'); el.className = 'tile blocked'; el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; el.style.zIndex = idx;
+    const el = document.createElement('div'); el.className = 'tile blocked'; 
+    el.style.left = finalX + 'px'; el.style.top = finalY + 'px'; el.style.zIndex = idx;
     el.innerHTML = `<span class="ch" style="font-family: ${item.font}">${item.char}</span>`;
     const tileObj = { ...item, x: finalX, y: finalY, zIndex: idx, el, onBoard: true, blocked: true };
     el.addEventListener('click', () => clickTile(tileObj));
