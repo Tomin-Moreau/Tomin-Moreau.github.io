@@ -188,9 +188,10 @@ body {
 }
 
 /* Controls */
-.ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1rem; }
+.ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1.2rem; }
 .ctrl label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
-.ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; }
+/* touch-action: pan-y ALLOWS vertical scrolling over the slider without changing the slider's value! */
+.ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; touch-action: pan-y; margin-top: 0.2rem; margin-bottom: 0.2rem; }
 .ctrl-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;}
 .ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
 .ctrl select { padding: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
@@ -209,16 +210,16 @@ body {
 .range-slider input[type="range"] {
   position: absolute; top: 0; left: 0; width: 100%;
   pointer-events: none; appearance: none; background: transparent;
-  margin: 0; height: 100%; outline: none;
+  margin: 0; height: 100%; outline: none; touch-action: pan-y;
 }
 .range-slider input[type="range"]::-webkit-slider-thumb {
   pointer-events: auto; appearance: none; cursor: pointer;
-  width: 14px; height: 14px; border-radius: 50%;
+  width: 16px; height: 16px; border-radius: 50%;
   background: var(--bg); border: 2px solid var(--ink); box-shadow: 0 0 0 1px var(--bg);
 }
 .range-slider input[type="range"]::-moz-range-thumb {
   pointer-events: auto; appearance: none; cursor: pointer;
-  width: 14px; height: 14px; border-radius: 50%;
+  width: 16px; height: 16px; border-radius: 50%;
   background: var(--bg); border: 2px solid var(--ink);
 }
 
@@ -1160,7 +1161,7 @@ function startLevel(lvlIdx) {
       fontAssignments = Array(copies).fill(levelFonts[0]);
     } else if (currentDifficulty === 2) {
       const half = Math.floor(copies / 2);
-      fontAssignments = [...Array(half).fill(levelFonts[0]), ...Array(copies - half).fill(levelFonts[1])];
+      fontAssignments =[...Array(half).fill(levelFonts[0]), ...Array(copies - half).fill(levelFonts[1])];
     } else if (currentDifficulty === 3) {
       const third = Math.floor(copies / 3);
       fontAssignments =[...Array(third).fill(levelFonts[0]), ...Array(third).fill(levelFonts[1]), ...Array(copies - third * 2).fill(levelFonts[2])];
