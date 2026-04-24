@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<!-- Crucial for Mobile: Disables pinch-zoom to make it act like a native app -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Scholar Match — Harmony & Layout</title>
 
 <!-- Attempt to load external levels file -->
@@ -23,6 +24,7 @@
   --blocked-ink: #7b7569;
   --ui-scale: 1.5;
   --game-scale: 1.5;
+  --tile-font: 'Noto Serif SC', serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,23 +74,20 @@ body {
   overflow-y: auto;
 }
 
+.menu-split {
+  display: flex; gap: 2rem; width: 1000px; text-align: left; padding: 2.5rem;
+}
+
 .menu-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 0.5rem;
-  border-bottom: 2px solid var(--ink);
+  font-family: 'Noto Serif SC', serif; font-size: 3rem;
+  font-weight: 700; color: var(--ink);
+  margin-bottom: 0.5rem; border-bottom: 2px solid var(--ink);
   padding-bottom: 0.5rem;
 }
 
 .menu-subtitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink-light);
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-size: 1rem; font-weight: 700; color: var(--ink-light);
+  margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px;
 }
 
 .btn {
@@ -115,55 +114,35 @@ body {
 
 /* Library View Specifics */
 .col-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 0.5rem;
-  line-height: 1.2;
-  word-wrap: break-word;
+  font-family: 'Noto Serif SC', serif; font-size: 2.2rem;
+  font-weight: 700; color: var(--ink); margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--ink); padding-bottom: 0.5rem; line-height: 1.2; word-wrap: break-word;
 }
-
 .col-separator {
-  width: 2px; flex-shrink: 0;
-  background: var(--ink); opacity: 0.2;
-  margin: 1.5rem 0;
+  width: 2px; flex-shrink: 0; background: var(--ink); opacity: 0.2; margin: 1.5rem 0;
 }
 
 .mode-toggle-container { display: flex; gap: 10px; margin-bottom: 1.5rem; }
 .btn-mode { flex: 1; padding: 0.5rem; font-size: 0.9rem; background: var(--bg); color: var(--ink-light); border-color: var(--ink-light); }
 .btn-mode.active-mode { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-/* Level Grid (Top-to-Bottom, then Left-to-Right) */
+/* Level Grid (5x5) */
 .lvl-grid {
-  display: grid;
-  grid-template-rows: repeat(5, 1fr);
-  grid-template-columns: repeat(5, 1fr);
-  grid-auto-flow: column;
-  gap: 0.5rem;
-  width: 100%;
+  display: grid; grid-template-rows: repeat(5, 1fr); grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column; gap: 0.5rem; width: 100%;
 }
 .btn-lvl {
-  background: var(--bg); color: var(--ink);
-  font-family: 'JetBrains Mono', monospace;
-  border: 2px solid var(--ink);
-  font-size: 0.8rem; font-weight: 700;
-  cursor: pointer; transition: all 0.15s;
-  aspect-ratio: 1;
+  background: var(--bg); color: var(--ink); font-family: 'JetBrains Mono', monospace;
+  border: 2px solid var(--ink); font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; aspect-ratio: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: relative;
-  padding-bottom: 0.8rem; /* Space for the seals */
+  position: relative; padding-bottom: 0.8rem; 
 }
 .btn-lvl:hover { background: var(--tile-hover); }
 .selected-lvl { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
 /* The 3 Difficulty Seals (Left, Middle, Right) */
-.lvl-seal-container {
-  position: absolute; bottom: 2px; left: 3px; right: 3px;
-  height: 14px; pointer-events: none;
-}
+.lvl-seal-container { position: absolute; bottom: 2px; left: 3px; right: 3px; height: 14px; pointer-events: none; }
 .lvl-seal {
   position: absolute; bottom: 0;
   font-family: 'Noto Serif SC', serif; font-size: 0.65rem; line-height: 1;
@@ -173,17 +152,14 @@ body {
 .seal-d2 { left: 50%; transform: translateX(-50%) rotate(5deg); color: #5f7a8c; border: 1px solid #5f7a8c; }
 .seal-d3 { right: 0; transform: rotate(-12deg); color: #c93b3b; border: 1px solid #c93b3b; }
 
-.pagination-controls {
-  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-  margin-top: 1.5rem;
-}
+.pagination-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
 .btn-icon { width: auto; padding: 0.4rem 0.8rem; }
 
 /* Level Preview Grids */
 .preview-grid-5x2 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 1.5rem; }
 .preview-char {
   border: 2px solid var(--ink); background: var(--tile-bg);
-  font-family: 'Noto Serif SC', serif; font-size: 1.8rem;
+  font-family: var(--tile-font); font-size: 1.8rem;
   padding: 5px 0; text-align: center; border-radius: 4px;
   aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
 }
@@ -203,17 +179,6 @@ body {
 .ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
 .ctrl select { padding: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
 
-/* Distributions UI */
-.ctrl-dist { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
-.dist-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
-.dist-row input { accent-color: var(--ink); width: 1.1rem; height: 1.1rem; cursor: pointer; }
-.graph { display: flex; align-items: flex-end; gap: 2px; height: 14px; margin-left: auto; }
-.graph span { width: 6px; background: var(--ink); border-radius: 1px; }
-.uni span { height: 10px; } .front span:nth-child(1) { height: 4px; }
-.front span:nth-child(2) { height: 8px; } .front span:nth-child(3) { height: 14px; }
-.back span:nth-child(1) { height: 14px; } .back span:nth-child(2) { height: 8px; }
-.back span:nth-child(3) { height: 4px; }
-
 /* Font Options Selectors */
 .font-diff-section { background: var(--tile-bg); border: 2px solid var(--ink); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
 .font-selectors { display: grid; grid-template-columns: 1fr 32px; gap: 6px; margin-top: 5px; align-items: center; }
@@ -221,10 +186,8 @@ body {
 
 /* ─────────── SIDEBAR (GAME SCREEN) ─────────── */
 #sidebar {
-  width: 20rem; height: 100vh;
-  position: sticky; top: 0; left: 0;
-  background: var(--panel); 
-  padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+  width: 20rem; height: 100vh; position: sticky; top: 0; left: 0;
+  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
   flex-shrink: 0; overflow-y: auto; z-index: 200;
 }
 #sidebar::after {
@@ -242,20 +205,19 @@ body {
 }
 .compact-stats { padding: 10px; font-size: 0.8rem; margin-bottom: 1rem; }
 
-/* ─────────── GAME COLUMN (STICKY LAYOUT) ─────────── */
+.mobile-menu-btn { display: none; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+
+/* ─────────── GAME COLUMN ─────────── */
 #game-col {
-  flex: 1; height: 100vh;
-  display: flex; flex-direction: column; align-items: stretch;
+  flex: 1; height: 100vh; display: flex; flex-direction: column; align-items: stretch;
   position: relative; overflow: auto; background: var(--bg);
+  -webkit-overflow-scrolling: touch; /* Smooth panning on iOS */
 }
 
 /* BIG CORNER INFO */
 #info-corner {
-  position: absolute;
-  top: 2rem; right: 3rem;
-  text-align: right;
-  z-index: 100;
-  pointer-events: none; 
+  position: absolute; top: 2rem; right: 3rem; text-align: right; z-index: 100; pointer-events: none; 
 }
 .info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; }
 .info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
@@ -282,14 +244,36 @@ body {
   transform: scale(var(--game-scale)); transform-origin: center center;
 }
 
+/* RESPONSIVE BUFFER */
 #buf-wrapper-spacer {
   position: sticky; bottom: 0; left: 0; right: 0; z-index: 100;
   background: var(--bg); border-top: 2px solid var(--ink);
-  height: calc(140px * var(--game-scale));
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+  padding: 10px 1rem; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
 }
-#buf-area { width: 880px; transform: scale(var(--game-scale)); transform-origin: center center; }
+#buf-area { width: 100%; max-width: 600px; margin: 0 auto; }
+#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+#buf-title { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
+#buf-cnt { font-size: 0.85rem; font-weight: 700; }
+
+#slots { display: flex; gap: 2%; justify-content: center; }
+.slot { 
+  width: 13%; max-width: 60px; aspect-ratio: 3/4; 
+  border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; 
+}
+.btile {
+  position: absolute; inset: -2px; border-radius: 4px;
+  background: var(--tile-bg); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--ink);
+}
+.btile .ch { font-size: clamp(1.2rem, 5vw, 2.4rem); font-weight: 700; color: var(--ink); }
+.btile.entering { animation: btIn .2s ease-out both; }
+@keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btile.clear-anim { animation: btClear .38s ease-in forwards; }
+@keyframes btClear {
+  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
+  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
+  100% { transform: scale(0); opacity: 0; }
+}
 
 /* ─────────── TILES ─────────── */
 .tile {
@@ -304,26 +288,6 @@ body {
 .tile.free:hover { background: var(--tile-hover); }
 .tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
 @keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
-
-#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-#buf-title { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
-#buf-cnt { font-size: 0.75rem; font-weight: 700; }
-#slots { display: flex; gap: 8px; justify-content: center; }
-.slot { width: 60px; height: 80px; border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; }
-.btile {
-  position: absolute; inset: -2px; border-radius: 4px;
-  background: var(--tile-bg); border: 2px solid var(--ink);
-  display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 var(--ink);
-}
-.btile .ch { font-size: 2.4rem; font-weight: 700; color: var(--ink); }
-.btile.entering { animation: btIn .2s ease-out both; }
-@keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.btile.clear-anim { animation: btClear .38s ease-in forwards; }
-@keyframes btClear {
-  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
-  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
-  100% { transform: scale(0); opacity: 0; }
-}
 
 /* ─────────── OVERLAY (Win/Loss) ─────────── */
 #overlay {
@@ -340,6 +304,40 @@ body {
 #ov-title { font-family: 'Noto Serif SC', serif; font-size: 2.6rem; font-weight: 700; color: var(--ink); }
 .ov-rules { font-size: 0.9rem; color: var(--ink-light); max-width: 320px; line-height: 1.5; font-weight: 700; }
 .ov-stats { font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+/* ─────────── MOBILE RESPONSIVENESS ─────────── */
+@media (max-width: 900px) {
+  /* Fix Menu boxes */
+  .menu-split { flex-direction: column !important; padding: 1.5rem !important; gap: 1rem !important; }
+  #lvl-col-left, #lvl-col-preview { width: 100% !important; padding: 0 !important; border: none !important; }
+  .col-separator { width: 100% !important; height: 2px !important; margin: 1rem 0 !important; }
+  .options-tabs { flex-wrap: wrap; }
+  
+  /* Sidebar Drawer */
+  #sidebar {
+    position: fixed; left: -100%; top: 0; bottom: 0;
+    width: 85vw; max-width: 320px;
+    z-index: 1000; transition: left 0.3s ease;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+  }
+  #sidebar.open { left: 0; }
+  .sidebar-overlay.open { display: block; }
+  
+  .mobile-menu-btn {
+    display: block !important;
+    position: fixed; top: 15px; left: 15px; z-index: 90;
+    padding: 8px 12px; font-size: 1.2rem;
+    background: var(--bg); border: 2px solid var(--ink);
+    color: var(--ink); border-radius: 4px; cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink); font-weight: 700; font-family: 'JetBrains Mono';
+  }
+  
+  /* Shrink corner info */
+  #info-corner { top: 15px; right: 15px; }
+  .info-lvl { font-size: 2rem; margin-bottom: 0.2rem; }
+  .info-sub { font-size: 1.5rem; }
+  .info-stamp { font-size: 2rem; padding: 2px 8px; margin-top: 0.5rem; }
+}
 </style>
 </head>
 <body>
@@ -358,8 +356,7 @@ body {
 </div>
 
 <div id="view-levels" class="view hide">
-  <div class="menu-box" style="display: flex; gap: 2rem; width: 1000px; max-width: 95vw; min-height: 650px; text-align: left; padding: 2.5rem;">
-    
+  <div class="menu-box menu-split">
     <!-- Column 1: List & Modes -->
     <div id="lvl-col-left" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
       <div class="col-title">Library</div>
@@ -380,7 +377,9 @@ body {
         <button class="btn btn-icon" id="btn-next-page" onclick="changePage(1)">▶</button>
       </div>
 
-      <button class="btn btn-secondary" id="backToMainFromLevels" style="margin-top: auto;">Back to Menu</button>
+      <div style="margin-top: auto; padding-top: 1.5rem;">
+        <button class="btn btn-secondary" id="backToMainFromLevels">Back to Menu</button>
+      </div>
     </div>
 
     <div class="col-separator"></div>
@@ -415,8 +414,8 @@ body {
     
     <div class="options-tabs">
       <button class="tab-btn active" data-tab="general" onclick="switchOptionsTab('general')">General</button>
-      <button class="tab-btn" data-tab="fonts" onclick="switchOptionsTab('fonts')">Fonts Setup</button>
-      <button class="tab-btn" data-tab="layout" onclick="switchOptionsTab('layout')">Layout Tuner</button>
+      <button class="tab-btn" data-tab="fonts" onclick="switchOptionsTab('fonts')">Fonts</button>
+      <button class="tab-btn" data-tab="layout" onclick="switchOptionsTab('layout')">Layout</button>
     </div>
 
     <!-- GENERAL TAB -->
@@ -426,11 +425,9 @@ body {
         <input type="range" class="std-range" id="sl-vol" min="0" max="1" step="0.05" value="0.5" oninput="updateOptionsUI()">
       </div>
       
-
-      <div style="margin-top: 0.5rem; margin-bottom: 1rem; padding: 10px; background: var(--tile-bg); border: 1px dashed var(--ink-light); font-size: 0.75rem; text-align: left; line-height: 1.4;">
-      <span style="font-weight: 700; color: var(--ink);">🎵 Music Credits:</span><br>
-      Track: <i>Spring River Flower Moon Night</i><br>
-      File: <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>
+      <div style="margin-bottom: 1.5rem; padding: 10px; background: var(--tile-bg); border: 1px dashed var(--ink-light); font-size: 0.75rem; text-align: left;">
+        <span style="font-weight: 700; color: var(--ink);">🎵 Local Music:</span><br>
+        To enable audio, download an MP3 file, rename it to <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>, and place it in the same folder as this game.
       </div>
 
       <div class="ctrl">
@@ -502,14 +499,6 @@ body {
         <label>Z-Layers <span id="val-z">9</span></label>
         <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value">
       </div>
-      <div>
-        <div class="menu-subtitle" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">Z-Distributions</div>
-        <div class="ctrl-dist">
-          <label class="dist-row"><input type="checkbox" id="dist-uni" checked><span>Uniform</span><div class="graph uni"><span></span><span></span><span></span></div></label>
-          <label class="dist-row"><input type="checkbox" id="dist-front"><span>Front-heavy (Top)</span><div class="graph front"><span></span><span></span><span></span></div></label>
-          <label class="dist-row"><input type="checkbox" id="dist-back" checked><span>Back-heavy (Bot)</span><div class="graph back"><span></span><span></span><span></span></div></label>
-        </div>
-      </div>
     </div>
 
     <button class="btn btn-secondary" style="margin-top: 1.5rem;" id="backToMainFromOptions">Back to Menu</button>
@@ -518,7 +507,9 @@ body {
 
 <div id="view-game" class="view hide">
   
-  <!-- IN-GAME SIDEBAR (Compact, Non-Scrolling) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <button class="mobile-menu-btn" id="mobile-btn" onclick="toggleSidebar()">☰ Menu</button>
+  
   <div id="sidebar">
     <div class="col-title" id="game-sidebar-title" style="font-size: 1.6rem; margin-bottom: 1rem;">Level Name</div>
       
@@ -541,23 +532,9 @@ body {
     <!-- BIG CORNER INFO -->
     <div id="info-corner">
       <div id="ic-lvl" class="info-lvl">Level 1</div>
-      
-      <!-- Zen Display -->
-      <div id="ic-zen" class="hide">
-         <div id="ic-stamp" class="info-stamp hide">阅</div>
-      </div>
-
-      <!-- Score Display -->
-      <div id="ic-score" class="hide">
-         <div id="ic-score-v" class="info-sub">0</div>
-         <div id="ic-combo-v" class="info-combo">COMBO ×1</div>
-         <div id="ic-combo-track"><div id="ic-combo-fill"></div></div>
-      </div>
-
-      <!-- Time Display -->
-      <div id="ic-time" class="hide">
-         <div id="ic-time-v" class="info-sub">0:00</div>
-      </div>
+      <div id="ic-zen" class="hide"><div id="ic-stamp" class="info-stamp hide">阅</div></div>
+      <div id="ic-score" class="hide"><div id="ic-score-v" class="info-sub">0</div><div id="ic-combo-v" class="info-combo">COMBO ×1</div><div id="ic-combo-track"><div id="ic-combo-fill"></div></div></div>
+      <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
     </div>
     
     <div id="board-wrapper-spacer"><div id="board"></div></div>
@@ -584,7 +561,6 @@ body {
 <script>
 'use strict';
 
-// Ensure exactly hoisting by using global function
 function $(id) { return document.getElementById(id); }
 
 // ==================== FONT MANAGEMENT ====================
@@ -597,7 +573,7 @@ const AVAILABLE_FONTS =[
   { name: 'Long Cang (Cursive)', val: "'Long Cang', cursive" }
 ];
 
-let savedFonts = JSON.parse(localStorage.getItem('scholarMatchFontsV6')) || {
+let savedFonts = JSON.parse(localStorage.getItem('scholarMatchFontsV7')) || {
   d1: [AVAILABLE_FONTS[0].val],
   d2: [AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val],
   d3: [AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val, AVAILABLE_FONTS[2].val]
@@ -639,8 +615,8 @@ function validateFonts() {
   $('p-d2-f1').style.fontFamily = $('d2-f1').value; $('p-d2-f2').style.fontFamily = $('d2-f2').value;
   $('p-d3-f1').style.fontFamily = $('d3-f1').value; $('p-d3-f2').style.fontFamily = $('d3-f2').value; $('p-d3-f3').style.fontFamily = $('d3-f3').value;
 
-  savedFonts = { d1:[$('d1-f1').value], d2: [d2f1, d2f2], d3: [d3f1, d3f2, d3f3] };
-  localStorage.setItem('scholarMatchFontsV6', JSON.stringify(savedFonts));
+  savedFonts = { d1:[$('d1-f1').value], d2:[d2f1, d2f2], d3: [d3f1, d3f2, d3f3] };
+  localStorage.setItem('scholarMatchFontsV7', JSON.stringify(savedFonts));
 }
 
 // ==================== FALLBACK LEVEL DATA ====================
@@ -659,7 +635,7 @@ if (typeof HANZI_LIBRARY !== 'undefined' && HANZI_LIBRARY.length > 0) {
 }
 
 // ==================== STATS DATA ====================
-let userStats = JSON.parse(localStorage.getItem('scholarMatchStatsV6')) || {};
+let userStats = JSON.parse(localStorage.getItem('scholarMatchStatsV7')) || {};
 
 function saveStat(lvlIdx, diff, mode, val) {
   if (!userStats[lvlIdx]) userStats[lvlIdx] = {};
@@ -671,13 +647,13 @@ function saveStat(lvlIdx, diff, mode, val) {
     if (!userStats[lvlIdx][diff].time || val < userStats[lvlIdx][diff].time) userStats[lvlIdx][diff].time = val;
   }
   userStats[lvlIdx][diff].cleared = true; 
-  localStorage.setItem('scholarMatchStatsV6', JSON.stringify(userStats));
+  localStorage.setItem('scholarMatchStatsV7', JSON.stringify(userStats));
 }
 
 function resetProgression() {
   if(confirm("Are you sure you want to reset all your progression, best scores, and times?")) {
     userStats = {};
-    localStorage.removeItem('scholarMatchStatsV6');
+    localStorage.removeItem('scholarMatchStatsV7');
     if (viewActive === 'levels') renderLevelGrid();
     updatePreviewStats(currentLevelIndex, currentDifficulty);
     alert("Progression reset successfully.");
@@ -720,7 +696,7 @@ function startMusic() {
   if (bgm.paused) {
     let playPromise = bgm.play();
     if (playPromise !== undefined) {
-      playPromise.catch(e => { console.warn("Could not load local 'music.mp3'. Audio is disabled.", e); musicFailed = true; });
+      playPromise.catch(e => { console.warn("Could not load local 'music.mp3'. Audio is disabled."); musicFailed = true; });
     }
   }
 }
@@ -730,11 +706,20 @@ function ensureMusic() {
 }
 
 // ==================== UI & NAVIGATION ====================
+function toggleSidebar() {
+  $('sidebar').classList.toggle('open');
+  $('sidebar-overlay').classList.toggle('open');
+}
+
 function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`view-${v}`).classList.add('hide'));
   $(`view-${viewName}`).classList.remove('hide');
   $('overlay').style.display = 'none';
   gameActive = (viewName === 'game');
   viewActive = viewName;
+  
+  if($('sidebar')) $('sidebar').classList.remove('open');
+  if($('sidebar-overlay')) $('sidebar-overlay').classList.remove('open');
+  
   if (viewName === 'levels') renderLevelGrid();
   if (viewName !== 'game') {
     if (comboTid) clearTimeout(comboTid);
@@ -855,6 +840,14 @@ function changePage(dir) { currentPage += dir; renderLevelGrid(); }
 
 function initMenu() {
   initFontOptions();
+  
+  // Set Mobile Layout Default
+  if (window.innerWidth <= 800) {
+      $('sl-ui').value = 1.0;
+      $('sl-game').value = 0.8;
+      $('sl-spread').value = 180;
+  }
+  
   renderLevelGrid();
   if (GAME_LEVELS.length > 0) showPreview(0);
 
@@ -1017,32 +1010,28 @@ function startLevel(lvlIdx) {
   const board = $('board'); board.innerHTML = '';
   const spread = parseInt($('sl-spread').value); const flat = parseFloat($('sl-flat').value) || 0.7; 
   const snap = parseInt($('sl-snap').value); const zLayers = parseInt($('sl-z').value);
-  const dists =[];
-  if ($('dist-uni').checked) dists.push('uniform');
-  if ($('dist-front').checked) dists.push('front');
-  if ($('dist-back').checked) dists.push('back');
-  if (dists.length === 0) { dists.push('uniform'); $('dist-uni').checked = true; }
 
+  // Fixed copies per char so level finishes reliably
+  const copies = 6; 
+  
   // Assign Fonts based on Difficulty (D1=1, D2=2, D3=3)
   let levelFonts = savedFonts[`d${currentDifficulty}`] ||[AVAILABLE_FONTS[0].val];
 
   let deck =[]; let idCounter = 0;
   
   GAME_LEVELS[currentLevelIndex].chars.forEach(char => {
-    const dist = dists[Math.floor(Math.random() * dists.length)];
-    const copies = 6;
-    
     // Perfect distribution of fonts
     let fontAssignments =[];
     if (currentDifficulty === 1) fontAssignments = Array(6).fill(levelFonts[0]);
-    else if (currentDifficulty === 2) fontAssignments = [...Array(3).fill(levelFonts[0]), ...Array(3).fill(levelFonts[1])];
+    else if (currentDifficulty === 2) fontAssignments =[...Array(3).fill(levelFonts[0]), ...Array(3).fill(levelFonts[1])];
     else if (currentDifficulty === 3) fontAssignments =[...Array(2).fill(levelFonts[0]), ...Array(2).fill(levelFonts[1]), ...Array(2).fill(levelFonts[2])];
     shuffleArray(fontAssignments);
 
     for (let c = 0; c < copies; c++) {
-      let u = Math.random(); let norm = u;
-      if (dist === 'front') norm = Math.sqrt(u); else if (dist === 'back') norm = 1 - Math.sqrt(u);
-      let layer = Math.floor(norm * zLayers); if (layer >= zLayers) layer = zLayers - 1;
+      let u = Math.random();
+      // Assume Uniform distribution for tiles (simplifies mobile handling safely)
+      let layer = Math.floor(u * zLayers);
+      if (layer >= zLayers) layer = zLayers - 1;
       deck.push({ char, layer, uid: `t${idCounter}_${c}`, font: fontAssignments[c] });
     }
     idCounter++;
