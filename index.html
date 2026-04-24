@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Crucial Mobile Meta Tags for "App-like" Fullscreen (No URL bar if added to Home Screen) -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="display" content="standalone">
 <title>Scholar Match — Harmony & Layout</title>
 
 <!-- Attempt to load external levels file -->
@@ -36,11 +41,6 @@ body {
   color: var(--ink);
   font-family: 'JetBrains Mono', monospace;
   overflow: hidden; 
-  margin: 0; padding: 0;
-}
-
-#app-root {
-  width: 100vw; height: 100vh;
   display: flex;
 }
 
@@ -66,20 +66,6 @@ body {
 
 .hide { display: none !important; }
 
-/* ─────────── PORTRAIT LOCK ─────────── */
-#portrait-lock {
-  display: none; position: fixed; inset: 0; z-index: 999999;
-  background: var(--bg); color: var(--ink);
-  flex-direction: column; align-items: center; justify-content: center; text-align: center;
-}
-.rotate-icon { font-size: 4rem; margin-bottom: 1rem; animation: rotatePhone 2s infinite ease-in-out alternate; }
-@keyframes rotatePhone { 0% { transform: rotate(0deg); } 100% { transform: rotate(-90deg); } }
-
-@media screen and (orientation: portrait) and (max-width: 768px) {
-  #portrait-lock { display: flex; }
-  #app-root { display: none !important; }
-}
-
 /* ─────────── MENUS ─────────── */
 .menu-box {
   background: var(--panel);
@@ -103,8 +89,12 @@ body {
 }
 
 .menu-subtitle {
-  font-size: 1rem; font-weight: 700; color: var(--ink-light);
-  margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-light);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .btn {
@@ -131,79 +121,127 @@ body {
 
 /* Library View Specifics */
 .col-title {
-  font-family: 'Noto Serif SC', serif; font-size: 2.2rem;
-  font-weight: 700; color: var(--ink); margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--ink); padding-bottom: 0.5rem;
-  line-height: 1.2; word-wrap: break-word;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.5rem;
+  line-height: 1.2;
+  word-wrap: break-word;
 }
-.col-separator { width: 2px; flex-shrink: 0; background: var(--ink); opacity: 0.2; margin: 1.5rem 0; }
+
+.col-separator {
+  width: 2px; flex-shrink: 0;
+  background: var(--ink); opacity: 0.2;
+  margin: 1.5rem 0;
+}
 
 .mode-toggle-container { display: flex; gap: 10px; margin-bottom: 1.5rem; }
 .btn-mode { flex: 1; padding: 0.5rem; font-size: 0.9rem; background: var(--bg); color: var(--ink-light); border-color: var(--ink-light); }
 .btn-mode.active-mode { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-/* Level Grid */
+/* Level Grid (Top-to-Bottom, then Left-to-Right) */
 .lvl-grid {
-  display: grid; grid-template-rows: repeat(5, 1fr); grid-template-columns: repeat(5, 1fr);
-  grid-auto-flow: column; gap: 0.5rem; width: 100%;
+  display: grid;
+  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 .btn-lvl {
-  background: var(--bg); color: var(--ink); font-family: 'JetBrains Mono', monospace;
-  border: 2px solid var(--ink); font-size: 0.8rem; font-weight: 700;
-  cursor: pointer; transition: all 0.15s; aspect-ratio: 1;
+  background: var(--bg); color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  border: 2px solid var(--ink);
+  font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+  aspect-ratio: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: relative; padding-bottom: 0.8rem; 
+  position: relative;
+  padding-bottom: 0.8rem; /* Space for the seals */
 }
 .btn-lvl:hover { background: var(--tile-hover); }
 .selected-lvl { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-/* Seals */
-.lvl-seal-container { position: absolute; bottom: 2px; left: 3px; right: 3px; height: 14px; pointer-events: none; }
+/* The 3 Difficulty Seals (Left, Middle, Right) */
+.lvl-seal-container {
+  position: absolute; bottom: 2px; left: 3px; right: 3px;
+  height: 14px; pointer-events: none;
+}
 .lvl-seal {
-  position: absolute; bottom: 0; font-family: 'Noto Serif SC', serif; font-size: 0.65rem; line-height: 1;
+  position: absolute; bottom: 0;
+  font-family: 'Noto Serif SC', serif; font-size: 0.65rem; line-height: 1;
   padding: 1px 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.85); font-weight: 700;
 }
 .seal-d1 { left: 0; transform: rotate(-8deg); color: #8c7355; border: 1px solid #8c7355; }
 .seal-d2 { left: 50%; transform: translateX(-50%) rotate(5deg); color: #5f7a8c; border: 1px solid #5f7a8c; }
 .seal-d3 { right: 0; transform: rotate(-12deg); color: #c93b3b; border: 1px solid #c93b3b; }
 
-.pagination-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
+.pagination-controls {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+  margin-top: 1.5rem;
+}
 .btn-icon { width: auto; padding: 0.4rem 0.8rem; }
 
-/* Preview Grid */
+/* Level Preview Grids */
 .preview-grid-5x2 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 1.5rem; }
 .preview-char {
-  border: 2px solid var(--ink); background: var(--tile-bg); font-family: var(--tile-font); font-size: 1.8rem;
-  padding: 5px 0; text-align: center; border-radius: 4px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--ink); background: var(--tile-bg);
+  font-family: var(--tile-font); font-size: 1.8rem;
+  padding: 5px 0; text-align: center; border-radius: 4px;
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
 }
+
 .best-stats-box {
-  margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 700; color: var(--ink); background: var(--tile-bg);
-  padding: 15px; border: 2px solid var(--ink); border-radius: 4px; text-align: left; display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 700;
+  color: var(--ink); background: var(--tile-bg);
+  padding: 15px; border: 2px solid var(--ink); border-radius: 4px;
+  text-align: left; display: flex; flex-direction: column; gap: 8px;
 }
 
 /* Controls */
 .ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1rem; }
 .ctrl label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
 .ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; }
+.ctrl-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;}
+.ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
 .ctrl select { padding: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
+
+/* Distributions UI */
+.ctrl-dist { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.dist-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.dist-row input { accent-color: var(--ink); width: 1.1rem; height: 1.1rem; cursor: pointer; }
 
 /* Font Options Selectors */
 .font-diff-section { background: var(--tile-bg); border: 2px solid var(--ink); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
 .font-selectors { display: grid; grid-template-columns: 1fr 32px; gap: 6px; margin-top: 5px; align-items: center; }
 .f-prev { border: 1px solid var(--ink); text-align: center; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--bg); }
 
-/* ─────────── SIDEBAR (GAME SCREEN) ─────────── */
-#sidebar {
-  width: 20rem; height: 100vh; position: sticky; top: 0; left: 0;
-  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
-  flex-shrink: 0; overflow-y: auto; z-index: 200; transition: left 0.3s ease;
+/* ─────────── IN-GAME RETRACTABLE SIDEBAR ─────────── */
+.menu-btn-global {
+  display: block; position: absolute; top: 1.5rem; left: 1.5rem; z-index: 300;
+  background: var(--panel); border: 2px solid var(--ink); padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; cursor: pointer;
+  box-shadow: 4px 4px 0 var(--ink); border-radius: 4px; font-size: 1.2rem; color: var(--ink);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
-#sidebar::after {
-  content: ''; position: absolute; right: 0; top: 5%; bottom: 5%;
-  width: 2px; background: var(--ink); opacity: 0.4;
-}
+.menu-btn-global:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
 
-#game-sidebar-title { font-size: 1.6rem; margin-bottom: 1rem; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+.sidebar-overlay.open { display: block; }
+
+#sidebar {
+  position: fixed; left: -300px; top: 0; bottom: 0;
+  width: 280px; max-width: 85vw;
+  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+  overflow-y: auto; z-index: 200; transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  border-right: 2px solid var(--ink); box-shadow: 10px 0 20px rgba(0,0,0,0.3);
+}
+#sidebar.open { left: 0; }
+
+#game-sidebar-title { font-size: 1.6rem; margin-bottom: 1rem; margin-top: 3rem; } /* Pushed down for menu button */
 .compact-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 1rem; }
 .compact-char {
   border: 1px solid var(--ink); background: var(--tile-bg);
@@ -213,19 +251,20 @@ body {
 }
 .compact-stats { padding: 10px; font-size: 0.8rem; margin-bottom: 1rem; }
 
-.mobile-menu-btn { display: none; }
-.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-
-/* ─────────── GAME COLUMN & CENTERED SCALING ─────────── */
+/* ─────────── GAME COLUMN (FULL WIDTH) ─────────── */
 #game-col {
-  flex: 1; height: 100vh;
+  flex: 1; width: 100vw; height: 100vh;
   display: flex; flex-direction: column; align-items: stretch;
-  position: relative; background: var(--bg);
+  position: relative; overflow: auto; background: var(--bg);
 }
 
 /* BIG CORNER INFO */
 #info-corner {
-  position: absolute; top: 2rem; right: 3rem; text-align: right; z-index: 100; pointer-events: none; 
+  position: absolute;
+  top: 2rem; right: 3rem;
+  text-align: right;
+  z-index: 100;
+  pointer-events: none; 
 }
 .info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; }
 .info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
@@ -241,38 +280,25 @@ body {
   margin-top: 1rem; font-weight: 700; opacity: 0.85;
 }
 
-/* Centered Board Container Logic */
 #board-wrapper-spacer {
-  flex: 1; width: 100%; overflow: auto; /* Allows panning if scaled larger than screen */
+  flex: 1; margin: 2rem auto;
   display: flex; align-items: center; justify-content: center;
-}
-#board-container {
-  width: calc(1100px * var(--game-scale));
-  height: calc(700px * var(--game-scale));
-  position: relative; flex-shrink: 0;
+  min-width: calc(1100px * var(--game-scale));
+  min-height: calc(700px * var(--game-scale));
 }
 #board {
-  position: absolute; top: 0; left: 0;
-  width: 1100px; height: 700px;
-  transform: scale(var(--game-scale)); transform-origin: top left;
+  position: relative; width: 1100px; height: 700px;
+  transform: scale(var(--game-scale)); transform-origin: center center;
 }
 
-/* Centered Buffer Container Logic */
 #buf-wrapper-spacer {
   position: sticky; bottom: 0; left: 0; right: 0; z-index: 100;
   background: var(--bg); border-top: 2px solid var(--ink);
+  height: calc(140px * var(--game-scale));
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding: 10px 0;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
 }
-#buf-container {
-  width: calc(880px * var(--game-scale));
-  height: calc(110px * var(--game-scale));
-  position: relative; flex-shrink: 0;
-}
-#buf-area { 
-  position: absolute; top: 0; left: 0;
-  width: 880px; transform: scale(var(--game-scale)); transform-origin: top left; 
-}
+#buf-area { width: 880px; transform: scale(var(--game-scale)); transform-origin: center center; }
 
 /* ─────────── TILES ─────────── */
 .tile {
@@ -323,291 +349,257 @@ body {
 #ov-title { font-family: 'Noto Serif SC', serif; font-size: 2.6rem; font-weight: 700; color: var(--ink); }
 .ov-rules { font-size: 0.9rem; color: var(--ink-light); max-width: 320px; line-height: 1.5; font-weight: 700; }
 .ov-stats { font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
-
-/* ─────────── MOBILE LANDSCAPE TWEAKS ─────────── */
-@media (max-width: 900px) and (max-height: 600px) {
-  /* Mobile Sidebar Slide Out */
-  .mobile-menu-btn { 
-    display: block; position: absolute; top: 10px; left: 10px; z-index: 300;
-    background: var(--panel); border: 2px solid var(--ink); padding: 5px 10px;
-    font-family: 'JetBrains Mono', monospace; font-weight: bold; cursor: pointer;
-  }
-  #sidebar {
-    position: fixed; left: -22rem; z-index: 400; box-shadow: 5px 0 15px rgba(0,0,0,0.4);
-  }
-  #sidebar.open { left: 0; }
-  .sidebar-overlay.open { display: block; }
-  
-  /* Compact Corner Info */
-  #info-corner { top: 10px; right: 15px; }
-  .info-lvl { font-size: 2.5rem; margin-bottom: 0.2rem; }
-  .info-sub { font-size: 1.5rem; }
-  .info-stamp { font-size: 2.5rem; padding: 2px 8px; margin-top: 0.5rem; }
-}
 </style>
 </head>
 <body>
 
-<div id="portrait-lock">
-  <div class="rotate-icon">📱</div>
-  <h2 style="font-size: 2rem; margin-bottom: 1rem;">Please Rotate Your Device</h2>
-  <p style="font-family: 'JetBrains Mono', monospace;">Scholar Match is best played in Landscape Mode.</p>
+<audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
+<div id="view-main" class="view">
+  <div class="menu-box" style="width: 500px; max-width: 90vw;">
+    <div class="menu-title">Scholar Match</div>
+    <div class="menu-subtitle">Mind & Harmony</div>
+    <div class="menu-list" style="margin-top: 2rem;">
+      <button class="btn" id="startFromMenuBtn">Select Level</button>
+      <button class="btn" id="optionsFromMenuBtn">Options</button>
+    </div>
+  </div>
 </div>
 
-<div id="app-root">
-
-  <!-- Local Music Implementation: Relies on 'music.mp3' file in the same directory -->
-  <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
-
-  <div id="view-main" class="view">
-    <div class="menu-box" style="width: 500px; max-width: 90vw;">
-      <div class="menu-title">Scholar Match</div>
-      <div class="menu-subtitle">Mind & Harmony</div>
-      <div class="menu-list" style="margin-top: 2rem;">
-        <button class="btn" id="startFromMenuBtn">Select Level</button>
-        <button class="btn" id="optionsFromMenuBtn">Options</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-levels" class="view hide">
-    <div class="menu-box" style="display: flex; gap: 2rem; width: 1000px; max-width: 95vw; min-height: 650px; text-align: left; padding: 2.5rem;">
-      
-      <!-- Column 1: List & Modes -->
-      <div id="lvl-col-left" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
-        <div class="col-title">Library</div>
-        
-        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Select Game Mode</div>
-        <div class="mode-toggle-container">
-          <button class="btn btn-mode active-mode" data-mode="zen" onclick="setMode('zen')">Zen</button>
-          <button class="btn btn-mode" data-mode="time" onclick="setMode('time')">Time</button>
-          <button class="btn btn-mode" data-mode="score" onclick="setMode('score')">Score</button>
-        </div>
-
-        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Choose Your Text</div>
-        
-        <!-- Grid for Levels (Vertical Flow) -->
-        <div class="lvl-grid" id="lvl-list"></div>
-        
-        <!-- Pagination Controls (Hidden if <= 25 levels) -->
-        <div id="lvl-pagination" class="pagination-controls hide">
-          <button class="btn btn-icon" id="btn-prev-page" onclick="changePage(-1)">◀</button>
-          <span id="page-indicator" style="font-weight: 700; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">1 / 1</span>
-          <button class="btn btn-icon" id="btn-next-page" onclick="changePage(1)">▶</button>
-        </div>
-
-        <button class="btn btn-secondary" id="backToMainFromLevels" style="margin-top: auto;">Back to Menu</button>
-      </div>
-
-      <!-- Floating Clean Vertical Separator -->
-      <div class="col-separator"></div>
-
-      <!-- Column 2: Preview & Difficulty -->
-      <div id="lvl-col-preview" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
-        <div class="col-title" id="preview-title">Level Name</div>
-        
-        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Difficulty (Fonts)</div>
-        <div class="mode-toggle-container" style="margin-bottom: 1.5rem;">
-          <button class="btn btn-mode active-mode btn-diff" data-diff="1" onclick="setDifficulty(1)">D1 (1 Font)</button>
-          <button class="btn btn-mode btn-diff" data-diff="2" onclick="setDifficulty(2)">D2 (2 Fonts)</button>
-          <button class="btn btn-mode btn-diff" data-diff="3" onclick="setDifficulty(3)">D3 (3 Fonts)</button>
-        </div>
-
-        <div class="best-stats-box">
-          <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="stat-best-time">--</span></div>
-          <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="stat-best-score">--</span></div>
-        </div>
-
-        <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Character Preview</div>
-        <div id="preview-chars" class="preview-grid-5x2"></div>
-        
-        <button class="btn" id="preview-play-btn" style="margin-top: auto;">Play Level</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="view-options" class="view hide">
-    <div class="menu-box" style="width: 550px; max-width: 95vw; min-height: 600px; display: flex; flex-direction: column;">
-      <div class="menu-title">Options</div>
-      
-      <div class="options-tabs">
-        <button class="tab-btn active" data-tab="general" onclick="switchOptionsTab('general')">General</button>
-        <button class="tab-btn" data-tab="fonts" onclick="switchOptionsTab('fonts')">Fonts Setup</button>
-        <button class="tab-btn" data-tab="layout" onclick="switchOptionsTab('layout')">Layout Tuner</button>
-      </div>
-
-      <!-- GENERAL TAB -->
-      <div id="tab-general" class="tab-content active" style="flex: 1;">
-        <div class="ctrl">
-          <label>Music Volume <span id="val-vol">50%</span></label>
-          <input type="range" class="std-range" id="sl-vol" min="0" max="1" step="0.05" value="0.5" oninput="updateOptionsUI()">
-        </div>
-        
-        <div style="margin-bottom: 1.5rem; padding: 10px; background: var(--tile-bg); border: 1px dashed var(--ink-light); font-size: 0.75rem; text-align: left;">
-          <span style="font-weight: 700; color: var(--ink);">🎵 Local Music:</span><br>
-          To enable audio, download an MP3 file, rename it to <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>, and place it in the same folder as this game.
-        </div>
-
-        <div class="ctrl">
-          <label>UI Scale <span id="val-ui">1.5x</span></label>
-          <input type="range" class="std-range" id="sl-ui" min="0.5" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
-        </div>
-        <div class="ctrl">
-          <label>Game Scale <span id="val-game">1.5x</span></label>
-          <input type="range" class="std-range" id="sl-game" min="0.3" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
-        </div>
-
-        <div style="margin-top: auto;">
-          <button class="btn btn-danger" onclick="resetProgression()">Reset Progression</button>
-        </div>
-      </div>
-
-      <!-- FONTS TAB -->
-      <div id="tab-fonts" class="tab-content" style="flex: 1;">
-        <div style="font-size: 0.8rem; color: var(--ink-light); margin-bottom: 1rem; line-height: 1.4;">
-          Assign exact typography styles. Duplicates within the same difficulty are automatically prevented.
-        </div>
-        
-        <div class="font-diff-section">
-          <label style="font-weight: 700; font-size: 0.85rem;">D1 (Bronze) - 1 Font</label>
-          <div class="font-selectors">
-            <select id="d1-f1" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d1-f1">永</div>
-          </div>
-        </div>
-
-        <div class="font-diff-section">
-          <label style="font-weight: 700; font-size: 0.85rem;">D2 (Silver) - 2 Fonts</label>
-          <div class="font-selectors">
-            <select id="d2-f1" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d2-f1">永</div>
-            <select id="d2-f2" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d2-f2">永</div>
-          </div>
-        </div>
-
-        <div class="font-diff-section">
-          <label style="font-weight: 700; font-size: 0.85rem;">D3 (Gold) - 3 Fonts</label>
-          <div class="font-selectors">
-            <select id="d3-f1" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d3-f1">永</div>
-            <select id="d3-f2" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d3-f2">永</div>
-            <select id="d3-f3" onchange="validateFonts()"></select>
-            <div class="f-prev" id="p-d3-f3">永</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LAYOUT TAB -->
-      <div id="tab-layout" class="tab-content" style="flex: 1;">
-        <div class="ctrl">
-          <label>Spread (Radius) <span id="val-spread">300</span></label>
-          <input type="range" class="std-range" id="sl-spread" min="50" max="500" value="300" oninput="document.getElementById('val-spread').innerText=this.value">
-        </div>
-        <div class="ctrl">
-          <label>Flattening (W:H) <span id="val-flat">0.7</span></label>
-          <input type="range" class="std-range" id="sl-flat" min="0.1" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('val-flat').innerText=this.value">
-        </div>
-        <div class="ctrl">
-          <label>Grid Snap (%) <span id="val-snap">0</span></label>
-          <input type="range" class="std-range" id="sl-snap" min="0" max="100" value="0" oninput="document.getElementById('val-snap').innerText=this.value">
-        </div>
-        <div class="ctrl">
-          <label>Z-Layers <span id="val-z">9</span></label>
-          <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value">
-        </div>
-        <div>
-          <div class="menu-subtitle" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">Z-Distributions</div>
-          <div class="ctrl-dist">
-            <label class="dist-row"><input type="checkbox" id="dist-uni" checked><span>Uniform</span><div class="graph uni"><span></span><span></span><span></span></div></label>
-            <label class="dist-row"><input type="checkbox" id="dist-front"><span>Front-heavy (Top)</span><div class="graph front"><span></span><span></span><span></span></div></label>
-            <label class="dist-row"><input type="checkbox" id="dist-back" checked><span>Back-heavy (Bot)</span><div class="graph back"><span></span><span></span><span></span></div></label>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn btn-secondary" style="margin-top: 1.5rem;" id="backToMainFromOptions">Back to Menu</button>
-    </div>
-  </div>
-
-  <div id="view-game" class="view hide">
+<div id="view-levels" class="view hide">
+  <div class="menu-box" style="display: flex; gap: 2rem; width: 1000px; max-width: 95vw; min-height: 650px; text-align: left; padding: 2.5rem;">
     
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
-
-    <!-- IN-GAME SIDEBAR -->
-    <div id="sidebar">
-      <div class="col-title" id="game-sidebar-title" style="font-size: 1.6rem; margin-bottom: 1rem;">Level Name</div>
-        
-      <div class="best-stats-box compact-stats">
-        <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="game-stat-time">--</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="game-stat-score">--</span></div>
+    <!-- Column 1: List & Modes -->
+    <div id="lvl-col-left" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+      <div class="col-title">Library</div>
+      
+      <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Select Game Mode</div>
+      <div class="mode-toggle-container">
+        <button class="btn btn-mode active-mode" data-mode="zen" onclick="setMode('zen')">Zen</button>
+        <button class="btn btn-mode" data-mode="time" onclick="setMode('time')">Time</button>
+        <button class="btn btn-mode" data-mode="score" onclick="setMode('score')">Score</button>
       </div>
 
-      <div class="menu-subtitle" style="margin-bottom: 0.5rem; font-size: 0.8rem;">Character Preview</div>
-      <div id="game-preview-chars" class="compact-preview"></div>
+      <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Choose Your Text</div>
+      <div class="lvl-grid" id="lvl-list"></div>
+      
+      <div id="lvl-pagination" class="pagination-controls hide">
+        <button class="btn btn-icon" id="btn-prev-page" onclick="changePage(-1)">◀</button>
+        <span id="page-indicator" style="font-weight: 700; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">1 / 1</span>
+        <button class="btn btn-icon" id="btn-next-page" onclick="changePage(1)">▶</button>
+      </div>
 
-      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.6rem;">
-        <button class="btn" id="game-retry-btn">Retry Level</button>
-        <button class="btn btn-secondary" id="game-back-lvl-btn">Back to Library</button>
-        <button class="btn btn-secondary" id="game-back-main-btn">Main Menu</button>
+      <button class="btn btn-secondary" id="backToMainFromLevels" style="margin-top: auto;">Back to Menu</button>
+    </div>
+
+    <div class="col-separator"></div>
+
+    <!-- Column 2: Preview & Difficulty -->
+    <div id="lvl-col-preview" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+      <div class="col-title" id="preview-title">Level Name</div>
+      
+      <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Difficulty (Fonts)</div>
+      <div class="mode-toggle-container" style="margin-bottom: 1.5rem;">
+        <button class="btn btn-mode active-mode btn-diff" data-diff="1" onclick="setDifficulty(1)">D1 (1 Font)</button>
+        <button class="btn btn-mode btn-diff" data-diff="2" onclick="setDifficulty(2)">D2 (2 Fonts)</button>
+        <button class="btn btn-mode btn-diff" data-diff="3" onclick="setDifficulty(3)">D3 (3 Fonts)</button>
+      </div>
+
+      <div class="best-stats-box">
+        <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="stat-best-time">--</span></div>
+        <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="stat-best-score">--</span></div>
+      </div>
+
+      <div class="menu-subtitle" style="margin-bottom: 0.5rem;">Character Preview</div>
+      <div id="preview-chars" class="preview-grid-5x2"></div>
+      
+      <button class="btn" id="preview-play-btn" style="margin-top: auto;">Play Level</button>
+    </div>
+  </div>
+</div>
+
+<div id="view-options" class="view hide">
+  <div class="menu-box" style="width: 550px; max-width: 95vw; min-height: 600px; display: flex; flex-direction: column;">
+    <div class="menu-title">Options</div>
+    
+    <div class="options-tabs">
+      <button class="tab-btn active" data-tab="general" onclick="switchOptionsTab('general')">General</button>
+      <button class="tab-btn" data-tab="fonts" onclick="switchOptionsTab('fonts')">Fonts Setup</button>
+      <button class="tab-btn" data-tab="layout" onclick="switchOptionsTab('layout')">Layout Tuner</button>
+    </div>
+
+    <!-- GENERAL TAB -->
+    <div id="tab-general" class="tab-content active" style="flex: 1;">
+      <div class="ctrl">
+        <label>Music Volume <span id="val-vol">50%</span></label>
+        <input type="range" class="std-range" id="sl-vol" min="0" max="1" step="0.05" value="0.5" oninput="updateOptionsUI()">
+      </div>
+      
+      <div style="margin-bottom: 1.5rem; padding: 10px; background: var(--tile-bg); border: 1px dashed var(--ink-light); font-size: 0.75rem; text-align: left;">
+        <span style="font-weight: 700; color: var(--ink);">🎵 Local Music:</span><br>
+        To enable audio, download an MP3 file, rename it to <code style="background: var(--bg); padding: 2px 4px;">music.mp3</code>, and place it in the same folder as this game.
+      </div>
+
+      <div class="ctrl">
+        <label>UI Scale <span id="val-ui">1.5x</span></label>
+        <input type="range" class="std-range" id="sl-ui" min="0.6" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
+      </div>
+      <div class="ctrl">
+        <label>Game Scale <span id="val-game">1.5x</span></label>
+        <input type="range" class="std-range" id="sl-game" min="0.4" max="2.5" step="0.1" value="1.5" oninput="updateOptionsUI()">
+      </div>
+
+      <div style="margin-top: auto;">
+        <button class="btn btn-danger" onclick="resetProgression()">Reset Progression</button>
       </div>
     </div>
 
-    <!-- GAME AREA -->
-    <div id="game-col">
-      <!-- BIG CORNER INFO -->
-      <div id="info-corner">
-        <div id="ic-lvl" class="info-lvl">Level 1</div>
-        
-        <div id="ic-zen" class="hide">
-           <div id="ic-stamp" class="info-stamp hide">阅</div>
-        </div>
-        <div id="ic-score" class="hide">
-           <div id="ic-score-v" class="info-sub">0</div>
-           <div id="ic-combo-v" class="info-combo">COMBO ×1</div>
-           <div id="ic-combo-track"><div id="ic-combo-fill"></div></div>
-        </div>
-        <div id="ic-time" class="hide">
-           <div id="ic-time-v" class="info-sub">0:00</div>
-        </div>
+    <!-- FONTS TAB -->
+    <div id="tab-fonts" class="tab-content" style="flex: 1;">
+      <div style="font-size: 0.8rem; color: var(--ink-light); margin-bottom: 1rem; line-height: 1.4;">
+        Assign exact typography styles. Duplicates within the same difficulty are automatically prevented.
       </div>
       
-      <!-- CENTERING WRAPPERS FIXES CSS TRANSFORM OVERLAPS -->
-      <div id="board-wrapper-spacer">
-        <div id="board-container">
-          <div id="board"></div>
+      <div class="font-diff-section">
+        <label style="font-weight: 700; font-size: 0.85rem;">D1 (Bronze) - 1 Font</label>
+        <div class="font-selectors">
+          <select id="d1-f1" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d1-f1">永</div>
         </div>
       </div>
+
+      <div class="font-diff-section">
+        <label style="font-weight: 700; font-size: 0.85rem;">D2 (Silver) - 2 Fonts</label>
+        <div class="font-selectors">
+          <select id="d2-f1" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d2-f1">永</div>
+          <select id="d2-f2" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d2-f2">永</div>
+        </div>
+      </div>
+
+      <div class="font-diff-section">
+        <label style="font-weight: 700; font-size: 0.85rem;">D3 (Gold) - 3 Fonts</label>
+        <div class="font-selectors">
+          <select id="d3-f1" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d3-f1">永</div>
+          <select id="d3-f2" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d3-f2">永</div>
+          <select id="d3-f3" onchange="validateFonts()"></select>
+          <div class="f-prev" id="p-d3-f3">永</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAYOUT TAB -->
+    <div id="tab-layout" class="tab-content" style="flex: 1;">
+      <div class="ctrl">
+        <label>Spread (Radius) <span id="val-spread">300</span></label>
+        <input type="range" class="std-range" id="sl-spread" min="50" max="500" value="300" oninput="document.getElementById('val-spread').innerText=this.value">
+      </div>
+      <div class="ctrl">
+        <label>Flattening (W:H) <span id="val-flat">0.7</span></label>
+        <input type="range" class="std-range" id="sl-flat" min="0.1" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('val-flat').innerText=this.value">
+      </div>
+      <div class="ctrl">
+        <label>Grid Snap (%) <span id="val-snap">0</span></label>
+        <input type="range" class="std-range" id="sl-snap" min="0" max="100" value="0" oninput="document.getElementById('val-snap').innerText=this.value">
+      </div>
+      <div class="ctrl">
+        <label>Z-Layers <span id="val-z">9</span></label>
+        <input type="range" class="std-range" id="sl-z" min="1" max="12" value="9" oninput="document.getElementById('val-z').innerText=this.value">
+      </div>
+      <div>
+        <div class="menu-subtitle" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">Z-Distributions</div>
+        <div class="ctrl-dist">
+          <label class="dist-row"><input type="checkbox" id="dist-uni" checked><span>Uniform</span><div class="graph uni"><span></span><span></span><span></span></div></label>
+          <label class="dist-row"><input type="checkbox" id="dist-front"><span>Front-heavy (Top)</span><div class="graph front"><span></span><span></span><span></span></div></label>
+          <label class="dist-row"><input type="checkbox" id="dist-back" checked><span>Back-heavy (Bot)</span><div class="graph back"><span></span><span></span><span></span></div></label>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" style="margin-top: 1.5rem;" id="backToMainFromOptions">Back to Menu</button>
+  </div>
+</div>
+
+<div id="view-game" class="view hide">
+  
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <button class="menu-btn-global" onclick="toggleSidebar()">☰ Menu</button>
+
+  <!-- ALWAYS RETRACTABLE IN-GAME SIDEBAR -->
+  <div id="sidebar">
+    <div class="col-title" id="game-sidebar-title">Level Name</div>
       
-      <div id="buf-wrapper-spacer">
-        <div id="buf-container">
-          <div id="buf-area">
-            <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
-            <div id="slots"></div>
-          </div>
-        </div>
-      </div>
+    <div class="best-stats-box compact-stats">
+      <div style="display: flex; justify-content: space-between;"><span>Best Time:</span> <span id="game-stat-time">--</span></div>
+      <div style="display: flex; justify-content: space-between;"><span>Best Score:</span> <span id="game-stat-score">--</span></div>
+    </div>
+
+    <div class="menu-subtitle" style="margin-bottom: 0.5rem; font-size: 0.8rem;">Character Preview</div>
+    <div id="game-preview-chars" class="compact-preview"></div>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.6rem;">
+      <button class="btn" id="game-retry-btn">Retry Level</button>
+      <button class="btn btn-secondary" id="game-back-lvl-btn">Back to Library</button>
+      <button class="btn btn-secondary" id="game-back-main-btn">Main Menu</button>
     </div>
   </div>
 
-  <div id="overlay">
-    <div id="overlay-inner">
-      <div id="ov-title">Level Cleared</div>
-      <div id="ov-stats-display" class="ov-stats"></div>
-      <div class="ov-rules" id="ov-msg">Your mind is sharp.</div>
-      <button class="btn" id="ov-next-btn">Next Level ▶</button>
-      <button class="btn btn-secondary" id="ov-menu-btn">Main Menu</button>
+  <div id="game-col">
+    <!-- BIG CORNER INFO -->
+    <div id="info-corner">
+      <div id="ic-lvl" class="info-lvl">Level 1</div>
+      
+      <div id="ic-zen" class="hide">
+         <div id="ic-stamp" class="info-stamp hide">阅</div>
+      </div>
+
+      <div id="ic-score" class="hide">
+         <div id="ic-score-v" class="info-sub">0</div>
+         <div id="ic-combo-v" class="info-combo">COMBO ×1</div>
+         <div id="ic-combo-track"><div id="ic-combo-fill"></div></div>
+      </div>
+
+      <div id="ic-time" class="hide">
+         <div id="ic-time-v" class="info-sub">0:00</div>
+      </div>
+    </div>
+    
+    <div id="board-wrapper-spacer"><div id="board"></div></div>
+    
+    <div id="buf-wrapper-spacer">
+      <div id="buf-area">
+        <div id="buf-hdr"><span id="buf-title">Buffer</span><span id="buf-cnt">0 / 7</span></div>
+        <div id="slots"></div>
+      </div>
     </div>
   </div>
+</div>
 
-</div> <!-- End App Root -->
+<div id="overlay">
+  <div id="overlay-inner">
+    <div id="ov-title">Level Cleared</div>
+    <div id="ov-stats-display" class="ov-stats"></div>
+    <div class="ov-rules" id="ov-msg">Your mind is sharp.</div>
+    <button class="btn" id="ov-next-btn">Next Level ▶</button>
+    <button class="btn btn-secondary" id="ov-menu-btn">Main Menu</button>
+  </div>
+</div>
 
 <script>
 'use strict';
 
 function $(id) { return document.getElementById(id); }
+
+// ==================== FULLSCREEN & SIDEBAR ====================
+function enterFullscreen() {
+  const doc = document.documentElement;
+  if (doc.requestFullscreen) doc.requestFullscreen().catch(() => {});
+  else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen().catch(() => {});
+  else if (doc.msRequestFullscreen) doc.msRequestFullscreen().catch(() => {});
+}
 
 function toggleSidebar() {
   $('sidebar').classList.toggle('open');
@@ -626,8 +618,8 @@ const AVAILABLE_FONTS =[
 
 let savedFonts = JSON.parse(localStorage.getItem('scholarMatchFontsV7')) || {
   d1:[AVAILABLE_FONTS[0].val],
-  d2: [AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val],
-  d3: [AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val, AVAILABLE_FONTS[2].val]
+  d2:[AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val],
+  d3:[AVAILABLE_FONTS[0].val, AVAILABLE_FONTS[1].val, AVAILABLE_FONTS[2].val]
 };
 
 function initFontOptions() {
@@ -666,7 +658,7 @@ function validateFonts() {
   $('p-d2-f1').style.fontFamily = $('d2-f1').value; $('p-d2-f2').style.fontFamily = $('d2-f2').value;
   $('p-d3-f1').style.fontFamily = $('d3-f1').value; $('p-d3-f2').style.fontFamily = $('d3-f2').value; $('p-d3-f3').style.fontFamily = $('d3-f3').value;
 
-  savedFonts = { d1:[$('d1-f1').value], d2:[d2f1, d2f2], d3: [d3f1, d3f2, d3f3] };
+  savedFonts = { d1:[$('d1-f1').value], d2:[d2f1, d2f2], d3:[d3f1, d3f2, d3f3] };
   localStorage.setItem('scholarMatchFontsV7', JSON.stringify(savedFonts));
 }
 
@@ -747,7 +739,7 @@ function startMusic() {
   if (bgm.paused) {
     let playPromise = bgm.play();
     if (playPromise !== undefined) {
-      playPromise.catch(e => { console.warn("Could not load local 'music.mp3'. Audio is disabled.", e); musicFailed = true; });
+      playPromise.catch(e => { musicFailed = true; });
     }
   }
 }
@@ -757,14 +749,6 @@ function ensureMusic() {
 }
 
 // ==================== UI & NAVIGATION ====================
-function applySmartDefaults() {
-  if (window.innerWidth <= 950 || window.innerHeight <= 600) {
-    $('sl-ui').value = 1.0;
-    $('sl-game').value = 0.6; // Small for landscape phones to center beautifully
-    $('sl-spread').value = 200;
-  }
-}
-
 function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`view-${v}`).classList.add('hide'));
   $(`view-${viewName}`).classList.remove('hide');
   $('overlay').style.display = 'none';
@@ -878,7 +862,7 @@ function renderLevelGrid() {
     btn.innerHTML += sealsHtml;
 
     btn.onclick = () => { ensureMusic(); showPreview(i); };
-    btn.ondblclick = () => { ensureMusic(); startLevel(i); };
+    btn.ondblclick = () => { ensureMusic(); enterFullscreen(); startLevel(i); };
     lvlContainer.appendChild(btn);
   }
 
@@ -894,14 +878,21 @@ function renderLevelGrid() {
 function changePage(dir) { currentPage += dir; renderLevelGrid(); }
 
 function initMenu() {
-  applySmartDefaults();
   initFontOptions();
+  
+  // Set Mobile Layout Default
+  if (window.innerWidth <= 800) {
+      $('sl-ui').value = 1.0;
+      $('sl-game').value = 0.6;
+      $('sl-spread').value = 200;
+  }
+
   renderLevelGrid();
   if (GAME_LEVELS.length > 0) showPreview(0);
 
-  $('preview-play-btn').onclick = () => { ensureMusic(); startLevel(currentLevelIndex); };
-  $('startFromMenuBtn').onclick = () => { ensureMusic(); navTo('levels'); };
-  $('optionsFromMenuBtn').onclick = () => { ensureMusic(); navTo('options'); };
+  $('preview-play-btn').onclick = () => { ensureMusic(); enterFullscreen(); startLevel(currentLevelIndex); };
+  $('startFromMenuBtn').onclick = () => { ensureMusic(); enterFullscreen(); navTo('levels'); };
+  $('optionsFromMenuBtn').onclick = () => { ensureMusic(); enterFullscreen(); navTo('options'); };
   $('backToMainFromLevels').onclick = () => { ensureMusic(); navTo('main'); };
   $('backToMainFromOptions').onclick = () => { ensureMusic(); navTo('main'); };
   $('game-retry-btn').onclick = () => { ensureMusic(); startLevel(currentLevelIndex); };
@@ -1074,7 +1065,7 @@ function startLevel(lvlIdx) {
     const dist = dists[Math.floor(Math.random() * dists.length)];
     let fontAssignments =[];
     if (currentDifficulty === 1) fontAssignments = Array(6).fill(levelFonts[0]);
-    else if (currentDifficulty === 2) fontAssignments = [...Array(3).fill(levelFonts[0]), ...Array(3).fill(levelFonts[1])];
+    else if (currentDifficulty === 2) fontAssignments =[...Array(3).fill(levelFonts[0]), ...Array(3).fill(levelFonts[1])];
     else if (currentDifficulty === 3) fontAssignments =[...Array(2).fill(levelFonts[0]), ...Array(2).fill(levelFonts[1]), ...Array(2).fill(levelFonts[2])];
     shuffleArray(fontAssignments);
 
