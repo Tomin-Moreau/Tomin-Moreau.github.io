@@ -27,7 +27,7 @@
   --blocked-bg: #c9bfab;
   --blocked-ink: #7b7569;
   --ui-scale: 1.5;
-  --buf-scale: 1; /* Dynamic safety scale for tiny screens */
+  /* --buf-scale is no longer used – everything inside #game-col scales together */
   --tile-font: 'Noto Serif SC', serif;
 }
 
@@ -62,17 +62,210 @@ body {
   z-index: 10;
 }
 
+/* ─────────── GAME VIEW ─────────── */
 #view-game {
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   position: relative;
-  min-width: max-content;
+  z-index: 10;
 }
 
+/* The game world container – fixed design size, scaled to fit viewport */
+#game-col {
+  /* dimensions set by JS to match design board+buffer size */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center center;
+  /* No flex:1, no width:100vw – we use transform:scale to fit */
+}
+
+#board-container {
+  /* dimensions set to board design size, with extra spacing for HUD */
+  position: relative;
+  background: var(--bg);
+  /* The board itself is absolutely positioned inside */
+}
+
+#board {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  /* Tiles are positioned relative to this container */
+}
+
+/* ─────────── BUFFER (fixed pixel design) ─────────── */
+#buf-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg);
+  border-top: 2px solid var(--ink);
+  padding: 15px 0 10px 0;
+  /* Design height: auto based on content, but we control slot sizes */
+}
+#buf-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 480px;
+}
+#buf-title { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
+#buf-cnt { font-size: 18px; font-weight: 700; color: var(--ink); }
+#slots { display: flex; gap: 8px; justify-content: center; }
+
+/* Buffer slots – now rely on the global scale, no --buf-scale */
+.slot { 
+  width: 60px; 
+  height: 80px; 
+  border-radius: 4px;
+  border: 2px dashed var(--ink-light);
+  position: relative;
+  flex-shrink: 0;
+}
+.btile {
+  position: absolute; inset: -2px; border-radius: 4px;
+  background: var(--tile-bg); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; 
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.btile .ch { font-size: 42px; font-weight: 700; color: var(--ink); }
+.btile.entering { animation: btIn .2s ease-out both; }
+@keyframes btIn { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btile.clear-anim { animation: btClear .38s ease-in forwards; }
+@keyframes btClear {
+  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
+  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* ─────────── TILES ─────────── */
+.tile {
+  position: absolute;
+  width: 60px; height: 80px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; border: 2px solid var(--ink);
+  transition: background 0.15s ease, filter 0.15s;
+  /* No more margin tricks – x,y now relative to board top-left */
+}
+.tile .ch { font-size: 42px; font-weight: 700; line-height: 1; color: inherit; }
+.tile.blocked { background: var(--blocked-bg); color: var(--blocked-ink); border-color: var(--blocked-ink); cursor: not-allowed; }
+.tile.free { background: var(--tile-bg); color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); pointer-events: auto; }
+.tile.free:hover { background: var(--tile-hover); }
+.tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
+@keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
+
+/* ─────────── INFO CORNER (inside scaled board) ─────────── */
+#info-corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+  z-index: 100;
+  pointer-events: none;
+  /* Will scale with the game world */
+}
+.info-lvl {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg);
+}
+.info-sub {
+  font-size: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--ink);
+  text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg);
+}
+.info-sub.warn { color: #d00000; animation: pulse 1s infinite alternate; }
+@keyframes pulse { to { opacity: 0.5; } }
+.info-combo {
+  font-size: 1rem;
+  color: var(--ink-light);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 0.4rem;
+  margin-bottom: 6px;
+  text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg);
+}
+#ic-combo-track {
+  width: 140px;
+  height: 6px;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  margin-left: auto;
+}
+#ic-combo-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+  transition: width 0.1s linear;
+}
+.info-stamp {
+  color: #c93b3b;
+  border: 3px solid #c93b3b;
+  border-radius: 4px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 3rem; 
+  padding: 4px 12px;
+  display: inline-block;
+  transform: rotate(-15deg);
+  margin-top: 1rem;
+  font-weight: 700;
+  opacity: 0.85;
+  background: var(--bg);
+}
+
+/* ─────────── SIDEBAR (unaltered) ─────────── */
+#sidebar {
+  width: 22rem; max-width: 85vw; height: 100dvh; position: fixed; top: 0; left: -25rem;
+  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+  overflow-y: auto; z-index: 400; transition: left 0.3s ease;
+  box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+}
+#sidebar.open { left: 0; }
+
+.sidebar-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-top: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--ink); padding-bottom: 0.5rem;
+}
+#game-sidebar-title { font-size: 1.6rem; margin: 0; border: none; padding: 0; line-height: 1.2; }
+
+.compact-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 1rem; }
+.compact-char {
+  border: 1px solid var(--ink); background: var(--tile-bg);
+  font-family: 'Noto Serif SC', serif; font-size: 1.2rem;
+  padding: 2px; text-align: center; border-radius: 2px;
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+}
+.compact-stats { padding: 10px; font-size: 0.8rem; margin-bottom: 1rem; }
+
+.mobile-menu-btn {
+  display: block; position: fixed; top: 15px; left: 15px; z-index: 300;
+  background: var(--panel); border: 2px solid var(--ink); padding: 8px 15px;
+  font-family: 'JetBrains Mono', monospace; font-weight: bold; font-size: 1rem;
+  cursor: pointer; box-shadow: 4px 4px 0 var(--ink); text-transform: uppercase;
+  transition: all 0.1s ease;
+}
+.mobile-menu-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 399; }
+.sidebar-overlay.open { display: block; }
+
+/* ─────────── MENUS (unchanged) ─────────── */
 .hide { display: none !important; }
 
-/* ─────────── PORTRAIT LOCK ─────────── */
 #portrait-lock {
   display: none; position: fixed; inset: 0; z-index: 999999;
   background: var(--bg); color: var(--ink);
@@ -86,7 +279,6 @@ body {
   #app-root { display: none !important; }
 }
 
-/* ─────────── MENUS ─────────── */
 .menu-box {
   background: var(--panel);
   border: 2px solid var(--ink);
@@ -136,7 +328,6 @@ body {
 .tab-content { display: none; flex-direction: column; text-align: left; flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 1rem; }
 .tab-content.active { display: flex; }
 
-/* Library View Specifics */
 .col-title {
   font-family: 'Noto Serif SC', serif; font-size: 2.2rem;
   font-weight: 700; color: var(--ink); margin-bottom: 1.5rem;
@@ -190,7 +381,6 @@ body {
 /* Controls */
 .ctrl { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; margin-bottom: 1.2rem; }
 .ctrl label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; }
-/* touch-action: pan-y ALLOWS vertical scrolling over the slider */
 .ctrl input[type=range].std-range { width: 100%; accent-color: var(--ink); cursor: pointer; touch-action: pan-y; margin-top: 0.2rem; margin-bottom: 0.2rem; }
 .ctrl-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;}
 .ctrl-check input { width: 1.1rem; height: 1.1rem; accent-color: var(--ink); cursor: pointer;}
@@ -223,126 +413,7 @@ body {
   background: var(--bg); border: 2px solid var(--ink);
 }
 
-/* ─────────── SIDEBAR (GAME SCREEN) - ALWAYS FOLDABLE ─────────── */
-#sidebar {
-  width: 22rem; max-width: 85vw; height: 100dvh; position: fixed; top: 0; left: -25rem;
-  background: var(--panel); padding: 1.5rem 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
-  overflow-y: auto; z-index: 400; transition: left 0.3s ease;
-  box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-}
-#sidebar.open { left: 0; }
-
-.sidebar-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-top: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--ink); padding-bottom: 0.5rem;
-}
-#game-sidebar-title { font-size: 1.6rem; margin: 0; border: none; padding: 0; line-height: 1.2; }
-
-.compact-preview { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 1rem; }
-.compact-char {
-  border: 1px solid var(--ink); background: var(--tile-bg);
-  font-family: 'Noto Serif SC', serif; font-size: 1.2rem;
-  padding: 2px; text-align: center; border-radius: 2px;
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-}
-.compact-stats { padding: 10px; font-size: 0.8rem; margin-bottom: 1rem; }
-
-.mobile-menu-btn {
-  display: block; position: fixed; top: 15px; left: 15px; z-index: 300;
-  background: var(--panel); border: 2px solid var(--ink); padding: 8px 15px;
-  font-family: 'JetBrains Mono', monospace; font-weight: bold; font-size: 1rem;
-  cursor: pointer; box-shadow: 4px 4px 0 var(--ink); text-transform: uppercase;
-  transition: all 0.1s ease;
-}
-.mobile-menu-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
-
-.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 399; }
-.sidebar-overlay.open { display: block; }
-
-/* ─────────── TRUE RESPONSIVE GAME COLUMN ─────────── */
-#game-col {
-  flex: 1; width: 100vw; height: 100dvh;
-  display: flex; flex-direction: column; /* Default: Buffer Bottom */
-  position: relative; background: var(--bg);
-  overflow: hidden; 
-}
-
-/* BIG CORNER INFO - Stays Absolute to Board Container so it doesn't overlap buffer */
-#info-corner {
-  position: absolute; top: 1.5rem; right: 2rem; text-align: right; z-index: 100; pointer-events: none; 
-}
-.info-lvl { font-family: 'Noto Serif SC', serif; font-size: 4rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 0.5rem; text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
-.info-sub { font-size: 2rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
-.info-sub.warn { color: #d00000; animation: pulse 1s infinite alternate; }
-@keyframes pulse { to { opacity: 0.5; } }
-.info-combo { font-size: 1rem; color: var(--ink-light); font-weight: 700; letter-spacing: 1px; margin-top: 0.4rem; margin-bottom: 6px; text-shadow: 2px 2px 0 var(--bg), -2px -2px 0 var(--bg), 2px -2px 0 var(--bg), -2px 2px 0 var(--bg); }
-#ic-combo-track { width: 140px; height: 6px; border: 1px solid var(--ink); border-radius: 2px; background: transparent; margin-left: auto; }
-#ic-combo-fill { height: 100%; width: 0%; background: var(--ink); transition: width 0.1s linear; }
-.info-stamp {
-  color: #c93b3b; border: 3px solid #c93b3b; border-radius: 4px;
-  font-family: 'Noto Serif SC', serif; font-size: 3rem; 
-  padding: 4px 12px; display: inline-block; transform: rotate(-15deg);
-  margin-top: 1rem; font-weight: 700; opacity: 0.85; background: var(--bg);
-}
-
-/* Board Wrapper takes remaining space */
-#board-container {
-  flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
-  overflow: hidden; min-width: 0; min-height: 0;
-}
-
-/* Logical anchor centered within the container */
-#board { position: relative; width: 0; height: 0; }
-
-/* ─────────── RESPONSIVE BUFFER ─────────── */
-#buf-container {
-  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--bg); border-top: 2px solid var(--ink); z-index: 100; padding: 15px;
-}
-#buf-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; width: 100%; max-width: 480px; }
-#buf-title { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-light); font-weight: 700; }
-#buf-cnt { font-size: 18px; font-weight: 700; color: var(--ink); }
-#slots { display: flex; gap: 8px; justify-content: center; }
-
-/* Buffer Scaling System (so tiny screens never clip slots) */
-.slot { 
-  width: calc(60px * var(--buf-scale)); 
-  height: calc(80px * var(--buf-scale)); 
-  border-radius: 4px; border: 2px dashed var(--ink-light); position: relative; flex-shrink: 0; 
-}
-.btile {
-  position: absolute; inset: -2px; border-radius: 4px;
-  background: var(--tile-bg); border: 2px solid var(--ink);
-  display: flex; align-items: center; justify-content: center; 
-  box-shadow: calc(2px * var(--buf-scale)) calc(2px * var(--buf-scale)) 0 var(--ink);
-}
-.btile .ch { font-size: calc(42px * var(--buf-scale)); font-weight: 700; color: var(--ink); }
-.btile.entering { animation: btIn .2s ease-out both; }
-@keyframes btIn { from { transform: translateY(calc(-15px * var(--buf-scale))); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.btile.clear-anim { animation: btClear .38s ease-in forwards; }
-@keyframes btClear {
-  0% { transform: scale(1); opacity: 1; background: var(--tile-bg); color: var(--ink); }
-  40% { transform: scale(1.15); background: var(--ink); color: var(--tile-bg); }
-  100% { transform: scale(0); opacity: 0; }
-}
-
-/* ─────────── TILES ─────────── */
-.tile {
-  position: absolute; width: 60px; height: 80px; border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  user-select: none; border: 2px solid var(--ink);
-  margin-left: -30px; margin-top: -40px; /* Absolutely centers the tile on its X,Y logic coordinates */
-  transition: background 0.15s ease, filter 0.15s;
-}
-/* Static pixel sizes perfectly protect tiles from breaking when users adjust "Menu UI Scale" */
-.tile .ch { font-size: 42px; font-weight: 700; line-height: 1; color: inherit; }
-.tile.blocked { background: var(--blocked-bg); color: var(--blocked-ink); border-color: var(--blocked-ink); cursor: not-allowed; }
-.tile.free { background: var(--tile-bg); color: var(--ink); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); pointer-events: auto; }
-.tile.free:hover { background: var(--tile-hover); }
-.tile.leaving { pointer-events: none; animation: tLeave .2s forwards; }
-@keyframes tLeave { to { transform: scale(0.8); opacity: 0; } }
-
-/* ─────────── OVERLAY (Win/Loss) ─────────── */
+/* ─────────── OVERLAY (unchanged) ─────────── */
 #overlay {
   position: fixed; inset: 0; background: rgba(220, 208, 185, 0.9);
   display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99998;
@@ -357,28 +428,6 @@ body {
 #ov-title { font-family: 'Noto Serif SC', serif; font-size: 2.6rem; font-weight: 700; color: var(--ink); }
 .ov-rules { font-size: 0.9rem; color: var(--ink-light); max-width: 320px; line-height: 1.5; font-weight: 700; }
 .ov-stats { font-size: 2rem; font-weight: 700; margin: 1rem 0; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
-
-
-/* ─────────── ORIENTATION TWEAKS ─────────── */
-/* Mobile Landscape (Squashed Heights) -> Buffer snaps to Right */
-@media (orientation: landscape) and (max-height: 600px) {
-  #game-col { flex-direction: row; }
-  #buf-container { border-top: none; border-left: 2px solid var(--ink); padding: 10px; }
-  #buf-hdr { max-width: none; flex-direction: column; align-items: flex-end; gap: 4px; margin-bottom: 10px; text-align: right; }
-  #slots { flex-direction: column; gap: 6px; }
-  
-  .menu-box { padding: 1.2rem !important; }
-  .menu-title { font-size: 1.8rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; }
-  .menu-split { padding: 1rem !important; gap: 1.5rem; }
-  .col-title { font-size: 1.6rem; margin-bottom: 0.8rem; }
-  .menu-subtitle { margin-bottom: 0.5rem; }
-  .mobile-menu-btn { top: 10px; left: 10px; padding: 5px 10px; font-size: 0.9rem; }
-  
-  #info-corner { top: 10px; right: 15px; text-align: right; }
-  .info-lvl { font-size: 2.2rem; margin-bottom: 0; }
-  .info-sub { font-size: 1.2rem; }
-  .info-stamp { font-size: 1.5rem; padding: 2px 4px; margin-top: 0.2rem; }
-}
 
 </style>
 </head>
@@ -585,19 +634,17 @@ body {
       </div>
     </div>
 
-    <!-- RESPONSIVE AUTO-SCALING COLUMN -->
+    <!-- SCALABLE GAME COLUMN -->
     <div id="game-col">
       <div id="board-container">
-        <!-- Floating Info Corner -->
+        <div id="board"></div>
+        <!-- Info corner inside the board for proportional scaling -->
         <div id="info-corner">
           <div id="ic-lvl" class="info-lvl">Level 1</div>
           <div id="ic-zen" class="hide"><div id="ic-stamp" class="info-stamp hide">阅</div></div>
           <div id="ic-score" class="hide"><div id="ic-score-v" class="info-sub">0</div><div id="ic-combo-v" class="info-combo">COMBO ×1</div><div id="ic-combo-track"><div id="ic-combo-fill"></div></div></div>
           <div id="ic-time" class="hide"><div id="ic-time-v" class="info-sub">0:00</div></div>
         </div>
-        
-        <!-- Logical Center Origin -->
-        <div id="board"></div>
       </div>
       
       <!-- Adaptive Buffer Area -->
@@ -625,54 +672,64 @@ body {
 
 function $(id) { return document.getElementById(id); }
 
-// ==================== AUTO-FIT RESIZE LOGIC ====================
-// Mathematically perfectly bounds and guarantees tiles never overflow without scrolling.
+// ==================== UNIFIED SCALING ====================
 function resizeGame() {
   if (viewActive !== 'game') return;
 
+  const gameCol = $('game-col');
   const boardCont = $('board-container');
   const board = $('board');
-  const bufCont = $('buf-container');
-  if (!boardCont || !board || !bufCont) return;
+  if (!gameCol || !boardCont || !board) return;
 
-  const cw = boardCont.clientWidth;
-  const ch = boardCont.clientHeight;
-  if (cw === 0 || ch === 0) return;
-
-  // 1. Calculate the maximum theoretical visual distance (radius) any tile can be from 0,0
+  // 1. Get design dimensions of the board from current parameters
   const spread = parseInt($('sl-spread').value) || 300;
   const flat = parseFloat($('sl-flat').value) || 0.7;
   const zLayers = parseInt($('sl-z').value) || 9;
-
   const maxLayerOffset = (zLayers - 1) * 4;
-  const maxVisualX = spread + maxLayerOffset + 30; // 30 is half of 60px tile Width
-  const maxVisualY = (spread * flat) + maxLayerOffset + 40; // 40 is half of 80px tile Height
+  const maxVisualX = spread + maxLayerOffset + 30; // half tile width
+  const maxVisualY = spread * flat + maxLayerOffset + 40; // half tile height
 
-  // 2. Scale board to entirely contain this radius safely within viewport padding
-  const padding = 30; // safety border
-  const scaleX = (cw / 2 - padding) / maxVisualX;
-  const scaleY = (ch / 2 - padding) / maxVisualY;
-  const scale = Math.min(1.5, scaleX, scaleY); // Cap maximum visual scaling to 1.5x so PC tiles don't get massive
+  const boardDesignW = maxVisualX * 2 + 100; // extra padding for breathing room + HUD
+  const boardDesignH = maxVisualY * 2 + 100;
 
-  board.style.transform = `scale(${scale})`;
+  // 2. Set board container and board to those dimensions
+  boardCont.style.width = boardDesignW + 'px';
+  boardCont.style.height = boardDesignH + 'px';
+  board.style.width = boardDesignW + 'px';
+  board.style.height = boardDesignH + 'px';
 
-  // 3. Dynamically scale the buffer slots if screen size is extraordinarily tight
-  let bufScale = 1;
-  const isLandscapeShort = window.innerWidth > window.innerHeight && window.innerHeight <= 600;
-  
-  if (isLandscapeShort) {
-    // Buffer is a Vertical Stack on the right
-    let reqHeight = (7 * 86) + 50; // 7 slots * height + gaps + padding
-    if (window.innerHeight < reqHeight) bufScale = window.innerHeight / reqHeight;
-  } else {
-    // Buffer is a Horizontal Row on the bottom
-    let reqWidth = (7 * 68) + 40; // 7 slots * width + gaps + padding
-    if (window.innerWidth < reqWidth) bufScale = window.innerWidth / reqWidth;
-  }
-  document.documentElement.style.setProperty('--buf-scale', Math.min(1, bufScale));
+  // 3. Buffer design size: fixed content, height determined by its content.
+  //    We'll let it be natural, but we need the total game-col design size.
+  const bufCont = $('buf-container');
+  // force a reflow to measure height
+  bufCont.style.width = boardDesignW + 'px'; // match board width for alignment
+  // Reset any transform to measure natural size
+  gameCol.style.transform = 'none';
+  const bufHeight = bufCont.offsetHeight;
+  const totalDesignH = boardDesignH + bufHeight;
+
+  // 4. Compute scale to fit into viewport
+  const gameView = $('view-game');
+  const availW = gameView.clientWidth;
+  const availH = gameView.clientHeight;
+
+  if (availW === 0 || availH === 0) return;
+
+  const scaleW = availW / boardDesignW;
+  const scaleH = availH / totalDesignH;
+  let scale = Math.min(scaleW, scaleH, 1.5); // cap at 1.5x for huge screens
+  // Allow slightly smaller than 1 if needed, but never exceed 1.5
+
+  // 5. Apply the uniform scale
+  gameCol.style.transform = `scale(${scale})`;
 }
 
-window.addEventListener('resize', resizeGame);
+// Also debounce on window resize
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(resizeGame, 100);
+});
 
 // ==================== FULLSCREEN & SIDEBAR ====================
 function enterFullscreen() {
@@ -833,10 +890,13 @@ function applySmartDefaults() {
   if (window.innerWidth <= 950 || window.innerHeight <= 600) {
     $('sl-ui').value = 1.0;
     $('sl-spread').value = 200;
+    updateOptionsUI();
+    updateProbUI();
   }
 }
 
-function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`view-${v}`).classList.add('hide'));
+function navTo(viewName) {
+  ['main', 'levels', 'options', 'game'].forEach(v => $(`view-${v}`).classList.add('hide'));
   $(`view-${viewName}`).classList.remove('hide');
   $('overlay').style.display = 'none';
   gameActive = (viewName === 'game');
@@ -847,9 +907,9 @@ function navTo(viewName) {['main', 'levels', 'options', 'game'].forEach(v => $(`
   
   if (viewName === 'levels') renderLevelGrid();
 
-  // Instant layout resize bound verification
+  // When entering game, do a layout recalculation after a short boot
   if (viewName === 'game') {
-    setTimeout(resizeGame, 0); 
+    setTimeout(resizeGame, 0);
   }
 
   if (viewName !== 'game') {
@@ -870,7 +930,7 @@ function updateOptionsUI() {
   document.documentElement.style.setProperty('--ui-scale', uiVal);
   if (bgm) bgm.volume = parseFloat($('sl-vol').value);
   $('val-vol').innerText = Math.round(parseFloat($('sl-vol').value) * 100) + '%';
-  resizeGame();
+  if (viewActive === 'game') resizeGame();
 }
 
 function updateProbUI() {
@@ -1014,7 +1074,6 @@ function shuffleArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] =[arr[j], arr[i]]; } return arr;
 }
 
-// True bounding box overlaps (without specific screen limitations)
 function overlaps(ax, ay, bx, by) {
   const m = 2; return !(ax + TW - m <= bx + m || bx + TW - m <= ax + m || ay + TH - m <= by + m || by + TH - m <= ay + m);
 }
@@ -1197,7 +1256,16 @@ function startLevel(lvlIdx) {
   });
   shuffleArray(deck); deck.sort((a,b) => a.layer - b.layer);
 
-  // Tiles now spawn perfectly relatively from 0,0
+  // Compute board dimensions for placement
+  const maxLayerOffset = (zLayers - 1) * 4;
+  const maxVisualX = spread + maxLayerOffset + 30;
+  const maxVisualY = spread * flat + maxLayerOffset + 40;
+  const boardW = maxVisualX * 2 + 100;
+  const boardH = maxVisualY * 2 + 100;
+  // half dimensions for centering
+  const centerX = boardW / 2;
+  const centerY = boardH / 2;
+
   const stepX = TW/2, stepY = TH/2; const snapFactor = snap / 100;
   deck.forEach((item, idx) => {
     let finalX, finalY;
@@ -1208,15 +1276,20 @@ function startLevel(lvlIdx) {
       let snappedX = Math.round(px / stepX) * stepX; let snappedY = Math.round(py / stepY) * stepY;
       px = px * (1 - snapFactor) + snappedX * snapFactor; py = py * (1 - snapFactor) + snappedY * snapFactor;
       
+      // Apply layer offset (left/up)
       let visualX = px - item.layer * 4; 
       let visualY = py - item.layer * 4;
+      
+      // Convert to board coordinates (top-left origin)
+      let boardX = centerX + visualX - TW/2;
+      let boardY = centerY + visualY - TH/2;
       
       let collision = false;
       for (let j = 0; j < tiles.length; j++) {
         let other = tiles[j];
-        if (other.layer === item.layer && Math.abs(visualX - other.x) < TW - 2 && Math.abs(visualY - other.y) < TH - 2) { collision = true; break; }
+        if (other.layer === item.layer && Math.abs(boardX - other.x) < TW - 2 && Math.abs(boardY - other.y) < TH - 2) { collision = true; break; }
       }
-      finalX = visualX; finalY = visualY;
+      finalX = boardX; finalY = boardY;
       if (!collision) break;
     }
     const el = document.createElement('div'); el.className = 'tile blocked'; 
@@ -1228,7 +1301,7 @@ function startLevel(lvlIdx) {
   });
   recalcFree(); renderSlots(null);
   
-  // Guarantee perfect layout sizing after tiles load
+  // Final resize to fit the game perfectly
   resizeGame();
 }
 
