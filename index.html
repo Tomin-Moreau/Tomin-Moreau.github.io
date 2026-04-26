@@ -106,7 +106,7 @@ body {
   background: var(--bg);
   border-top: 2px solid var(--ink);
   padding: 15px 0 10px 0;
-  /* Design height: auto based on content, but we control slot sizes */
+  /* Design height: auto based on content, but we now force it via JS */
 }
 #buf-hdr {
   display: flex;
@@ -679,7 +679,8 @@ function resizeGame() {
   const gameCol = $('game-col');
   const boardCont = $('board-container');
   const board = $('board');
-  if (!gameCol || !boardCont || !board) return;
+  const bufCont = $('buf-container');
+  if (!gameCol || !boardCont || !board || !bufCont) return;
 
   // 1. Get design dimensions of the board from current parameters
   const spread = parseInt($('sl-spread').value) || 300;
@@ -698,29 +699,31 @@ function resizeGame() {
   board.style.width = boardDesignW + 'px';
   board.style.height = boardDesignH + 'px';
 
-  // 3. Buffer design size: fixed content, height determined by its content.
-  //    We'll let it be natural, but we need the total game-col design size.
-  const bufCont = $('buf-container');
-  // force a reflow to measure height
-  bufCont.style.width = boardDesignW + 'px'; // match board width for alignment
-  // Reset any transform to measure natural size
-  gameCol.style.transform = 'none';
-  const bufHeight = bufCont.offsetHeight;
-  const totalDesignH = boardDesignH + bufHeight;
+  // 3. Buffer design size IS FIXED (not measured) – guarantees same aspect ratio everywhere.
+  //    Calculated from: border-top 2px + padding 15+10 + header ~46px + margin 8px + slot height 80px
+  //    = 2 + 15 + 46 + 8 + 80 + 10 = 161px. We add 9px margin for safety → 170px.
+  const bufDesignH = 170;
+  bufCont.style.width = boardDesignW + 'px';   // match board width
+  bufCont.style.height = bufDesignH + 'px';    // fixed design height
 
-  // 4. Compute scale to fit into viewport
+  // 4. The total design size of the game column
+  const totalDesignW = boardDesignW;
+  const totalDesignH = boardDesignH + bufDesignH;
+  gameCol.style.width = totalDesignW + 'px';
+  // height is implicitly set by the children, but we don't need to force it
+
+  // 5. Compute scale to fit into viewport
   const gameView = $('view-game');
   const availW = gameView.clientWidth;
   const availH = gameView.clientHeight;
 
   if (availW === 0 || availH === 0) return;
 
-  const scaleW = availW / boardDesignW;
+  const scaleW = availW / totalDesignW;
   const scaleH = availH / totalDesignH;
   let scale = Math.min(scaleW, scaleH, 1.5); // cap at 1.5x for huge screens
-  // Allow slightly smaller than 1 if needed, but never exceed 1.5
 
-  // 5. Apply the uniform scale
+  // 6. Apply the uniform scale
   gameCol.style.transform = `scale(${scale})`;
 }
 
@@ -887,7 +890,7 @@ function ensureMusic() {
 
 // ==================== UI & NAVIGATION ====================
 function applySmartDefaults() {
-  // Only reduce the UI scale on very small screens; don't change game layout params.
+  // Only reduce UI scale on small screens; never change spread/flat.
   if (window.innerWidth <= 950 || window.innerHeight <= 600) {
     $('sl-ui').value = 1.0;
     updateOptionsUI();
