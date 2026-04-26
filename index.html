@@ -887,11 +887,10 @@ function ensureMusic() {
 
 // ==================== UI & NAVIGATION ====================
 function applySmartDefaults() {
+  // Only reduce the UI scale on very small screens; don't change game layout params.
   if (window.innerWidth <= 950 || window.innerHeight <= 600) {
     $('sl-ui').value = 1.0;
-    $('sl-spread').value = 200;
     updateOptionsUI();
-    updateProbUI();
   }
 }
 
